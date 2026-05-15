@@ -1,0 +1,429 @@
+# Mini ServiceNow
+
+A full-featured, self-contained IT Service Management (ITSM) platform inspired by ServiceNow. Built for teams that need ticketing, workflow automation, asset management, knowledge base, and AI-assisted operations -- all running from a single `docker-compose up`.
+
+**Stack**: Node.js / Express / TypeScript, PostgreSQL, React / Vite / TypeScript, Mantine UI, Docker
+
+---
+
+## What Is This?
+
+Mini ServiceNow is an open-source ITSM platform that replicates the core functionality of enterprise tools like ServiceNow, Jira Service Management, and Freshservice. It includes:
+
+- **Incident Management** -- Track and resolve IT issues with priority matrices, SLA enforcement, and state machines
+- **Change Management** -- Plan, approve, and implement changes with risk assessment and approval workflows
+- **Problem Management** -- Identify root causes across related incidents with investigation workflows
+- **CMDB / Asset Management** -- Track configuration items, relationships, and impact analysis
+- **Service Catalog** -- Self-service portal with dynamic request forms and approval routing
+- **Knowledge Base** -- Searchable articles with rich text editing and publish workflows
+- **Workflow Automation** -- Event-driven rules that auto-assign, notify, and update records
+- **AI Integration** -- Configurable AI assist (OpenAI, Anthropic, Ollama, or any custom provider) for summarization, resolution suggestions, risk assessment, and more
+- **Form Builder** -- Drag-and-drop custom forms with field validation
+- **Reporting & Export** -- Build custom reports and export to CSV
+- **Webhooks / Integrations** -- Push events to external systems with retry logic
+- **Notifications** -- In-app, email (SMTP), and Slack notification channels
+- **Role-Based Access Control** -- Admin, ITIL, User, Approver, and Knowledge Manager roles
+
+Everything is configurable through the admin UI -- no code changes needed to add AI providers, configure SMTP, set up webhooks, or create workflow rules.
+
+---
+
+## Quick Start (Docker)
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed
+
+### Run it
+
+```bash
+git clone <repo-url> mini-service-now
+cd mini-service-now
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+Wait for the containers to start (the server runs all database migrations and seeds automatically on first boot), then open:
+
+**[http://localhost:3000](http://localhost:3000)**
+
+### Default Login
+
+| Username | Password |
+|----------|----------|
+| `admin` | `admin123` |
+
+Log in with `admin` / `admin123` to get full access to all features.
+
+---
+
+## All Demo Accounts
+
+| Username | Password | Role | What You Can Do |
+|---|---|---|---|
+| `admin` | `admin123` | Admin | Everything -- manage users, configure AI, workflows, settings |
+| `itil.user` | `itil123` | ITIL | Create/manage incidents, changes, problems, KB articles |
+| `end.user` | `user123` | User | Create incidents, browse catalog, submit requests, read KB |
+| `approver` | `approver123` | Approver + ITIL | Approve changes and catalog requests + ITIL operations |
+| `kb.manager` | `kb123` | Knowledge Manager + ITIL | Manage KB articles + ITIL operations |
+
+You can also register a new account from the login page (self-registration is enabled by default).
+
+---
+
+## Installation Options
+
+### Option 1: Docker (Recommended)
+
+**Development mode** (hot reload on code changes):
+```bash
+docker-compose -f docker-compose.dev.yml up --build
+```
+
+**Production mode**:
+```bash
+docker-compose up --build
+```
+
+| Service | URL |
+|---------|-----|
+| Client (React) | [http://localhost:3000](http://localhost:3000) |
+| Server (API) | [http://localhost:3001](http://localhost:3001) |
+| PostgreSQL | `localhost:5432` |
+
+### Option 2: Local Development (without Docker)
+
+**Prerequisites**: Node.js 20+, PostgreSQL 14+
+
+**1. Set up the database**
+```bash
+psql -U postgres -c "CREATE USER msn_user WITH PASSWORD 'msn_password';"
+psql -U postgres -c "CREATE DATABASE miniservicenow OWNER msn_user;"
+psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE miniservicenow TO msn_user;"
+```
+
+**2. Configure environment**
+```bash
+cp .env.example .env
+# Edit .env if your PostgreSQL settings differ
+```
+
+**3. Start the server**
+```bash
+cd server
+npm install
+npm run dev
+```
+The server runs migrations and seeds automatically on startup. API at `http://localhost:3001`.
+
+**4. Start the client**
+```bash
+cd client
+npm install
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Modules
+
+### Dashboard
+- Stat cards: open incidents, changes, problems, catalog requests, KB articles, active CIs
+- Incidents by priority bar chart, changes by state pie chart
+- "My Work" tables for assigned incidents, changes, and problems
+
+### Incident Management
+- Full CRUD with auto-generated INC numbers
+- Priority matrix (urgency x impact)
+- State machine: New -> In Progress -> On Hold -> Resolved -> Closed
+- SLA engine with auto-calculated due dates and breach detection
+- Assignment to users and groups
+- Comments, work notes, attachments, audit trail
+- AI assist: summarize, suggest resolution, classify
+
+### Change Management
+- Full CRUD with auto-generated CHG numbers
+- Types: Normal, Standard, Emergency
+- Risk levels: High, Moderate, Low
+- State machine: New -> Assess -> Authorize -> Scheduled -> Implement -> Review -> Closed
+- Approval workflow (auto-advances to Scheduled when all approved)
+- Backout plans and justification fields
+- AI assist: risk assessment
+
+### Problem Management
+- Full CRUD with auto-generated PRB numbers
+- State machine: New -> Investigation -> Root Cause Found -> Fix in Progress -> Resolved -> Closed
+- Link related incidents and changes
+- Root cause, workaround, and permanent solution fields
+- AI assist: root cause analysis
+
+### CMDB / Asset Management
+- CI types (Server, Network Device, Application, Database, Storage)
+- Configuration items with serial numbers, locations, costs, and custom attributes
+- Relationships: depends_on, runs_on, connected_to
+- Recursive impact analysis (which CIs are affected if this one goes down?)
+- State machine: Inventory -> Active -> Maintenance -> Retired
+
+### Service Catalog
+- Browse items by category with card grid layout
+- Dynamic request forms generated from item variable definitions
+- Auto-created approval records for items requiring approval
+- Request tracking with REQ numbers
+
+### Knowledge Base
+- PostgreSQL full-text search across titles and body content
+- Category sidebar navigation
+- TipTap rich text editor for article authoring
+- Publish workflow: Draft -> Review -> Published -> Retired
+- View counts and "helpful" voting
+- AI assist: generate KB article from resolved incident
+
+### Workflow Automation
+- Event-driven rules triggered on record create, update, or state change
+- Condition builder: equals, not_equals, greater_than, less_than, contains, in, is_empty, regex
+- Actions: set field, change state, assign to user/group, send notification, create journal entry
+- Execution log with success/error tracking
+
+### AI Integration (Configurable)
+- **Any provider**: OpenAI, Anthropic (Claude), Ollama (local), or any OpenAI-compatible API
+- **Admin configurable**: Add provider in Settings -> AI Providers, enter API key and model, test connection
+- **Built-in prompts**: Incident summary, resolution suggestions, change risk assessment, problem root cause, KB article drafting, ticket classification
+- **Custom prompts**: Create your own prompt templates with `{{variable}}` placeholders
+- **Usage tracking**: Token counts, feedback (helpful/not helpful), per-provider stats
+- **No vendor lock-in**: Switch providers anytime, all configuration in the UI
+
+### Form Builder
+- Create custom form templates with drag-and-drop field ordering
+- Field types: text, textarea, number, date, select, checkbox, radio, section headers
+- Form submission tracking
+- Standalone forms or attached to catalog items
+
+### Reporting & Export
+- Build custom reports by selecting table, columns, and filters
+- Chart types: table, bar, pie, line
+- Export to CSV
+- Schedule reports (cron-based)
+
+### Webhooks / Integrations
+- Push events to external URLs on record create/update/state change
+- Auth types: none, bearer token, basic auth, API key
+- Retry with exponential backoff (3 attempts)
+- Full request/response logging
+- Test webhook from the UI
+
+### Notifications
+- In-app notifications with bell icon and unread count
+- Email notifications via SMTP (configurable in admin settings)
+- Slack notifications via webhook URL
+- Per-user notification preferences
+
+### Approvals
+- Centralized My Approvals page
+- Approve/reject with comments
+- Auto-state advancement when all approvals complete
+
+### Admin
+- User management (view, edit roles, activate/deactivate)
+- System settings (SMTP, Slack, AI, feature flags)
+- Workflow rule management
+- Integration/webhook management
+- AI provider and prompt configuration
+- Notification channel setup
+
+---
+
+## API Endpoints
+
+### Auth
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/refresh` | Refresh access token |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Current user profile |
+
+### Core ITSM
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST | `/api/incidents` | List/create incidents |
+| GET/PUT | `/api/incidents/:id` | Get/update incident |
+| GET/POST | `/api/changes` | List/create changes |
+| GET/PUT | `/api/changes/:id` | Get/update change |
+| GET/POST | `/api/problems` | List/create problems |
+| GET/PUT | `/api/problems/:id` | Get/update problem |
+| POST/DELETE | `/api/problems/:id/incidents/:iid` | Link/unlink incident |
+| POST/DELETE | `/api/problems/:id/changes/:cid` | Link/unlink change |
+
+### CMDB
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST | `/api/cmdb/types` | CI types |
+| GET/POST | `/api/cmdb/cis` | List/create CIs |
+| GET/PUT | `/api/cmdb/cis/:id` | Get/update CI |
+| GET/POST/DELETE | `/api/cmdb/cis/:id/relationships` | CI relationships |
+| GET | `/api/cmdb/cis/:id/impact` | Impact analysis |
+
+### Service Catalog & Knowledge
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/catalog/categories` | Catalog categories |
+| GET | `/api/catalog/items` | Catalog items |
+| POST/GET | `/api/catalog/requests` | Submit/list requests |
+| GET | `/api/knowledge` | List/search KB articles |
+| GET/POST/PUT | `/api/knowledge/:id` | CRUD article |
+
+### Automation & Integration
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST/PUT/DELETE | `/api/workflows` | Workflow rules |
+| GET | `/api/workflows/executions` | Execution log |
+| GET/POST/PUT/DELETE | `/api/integrations` | Webhooks |
+| POST | `/api/integrations/:id/test` | Test webhook |
+| GET | `/api/integrations/:id/logs` | Delivery logs |
+
+### AI
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST/PUT/DELETE | `/api/ai/providers` | AI provider config |
+| POST | `/api/ai/providers/:id/test` | Test AI connection |
+| GET/POST/PUT/DELETE | `/api/ai/prompts` | Prompt templates |
+| POST | `/api/ai/generate` | Generate AI completion |
+| POST | `/api/ai/feedback` | Submit feedback |
+| GET | `/api/ai/usage` | Usage statistics |
+
+### Other
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST | `/api/reports` | Reports |
+| GET | `/api/reports/:id/run` | Run report |
+| GET | `/api/reports/:id/export` | Export CSV |
+| GET/POST/PUT/DELETE | `/api/forms` | Form templates |
+| POST | `/api/forms/:id/submit` | Submit form |
+| GET/PUT | `/api/settings` | System settings |
+| GET/PUT | `/api/notification-prefs` | Notification preferences |
+| GET/POST | `/api/journal/:table/:id` | Comments/work notes |
+| GET/POST/DELETE | `/api/attachments/:table/:id` | File attachments |
+| GET | `/api/audit/:table/:id` | Audit trail |
+| GET | `/api/approvals/mine` | My approvals |
+| GET | `/api/dashboard/stats` | Dashboard statistics |
+| GET | `/api/health` | Health check |
+
+---
+
+## Project Structure
+
+```
+mini-service-now/
+├── docker-compose.yml              # Production
+├── docker-compose.dev.yml          # Development with hot reload
+├── shared/                         # Shared TypeScript interfaces & constants
+├── server/
+│   ├── src/
+│   │   ├── config/                 # Database, logger, app config
+│   │   ├── core/                   # Table registry, query builder, state machine,
+│   │   │   ├── event-bus.ts        # Typed event emitter for all record events
+│   │   │   ├── ai-engine.ts        # AI provider adapters (OpenAI, Anthropic, Ollama, custom)
+│   │   │   ├── workflow-engine.ts  # Condition evaluator + action executor
+│   │   │   ├── webhook-dispatcher.ts # Event-driven webhook delivery with retry
+│   │   │   └── channels/           # Email (nodemailer), Slack, in-app notification channels
+│   │   ├── middleware/             # Auth (JWT), RBAC, validation, error handler
+│   │   ├── modules/
+│   │   │   ├── auth/               # Login, register, refresh, JWT
+│   │   │   ├── users/              # User & group management
+│   │   │   ├── incidents/          # Incident CRUD + state machine + SLA
+│   │   │   ├── changes/            # Change CRUD + state machine + approvals
+│   │   │   ├── problems/           # Problem CRUD + linked incidents/changes
+│   │   │   ├── cmdb/               # CI types, CIs, relationships, impact analysis
+│   │   │   ├── catalog/            # Categories, items, requests
+│   │   │   ├── knowledge/          # Articles with full-text search
+│   │   │   ├── workflows/          # Automation rule CRUD + execution history
+│   │   │   ├── integrations/       # Webhook CRUD + test + logs
+│   │   │   ├── reporting/          # Reports, run, CSV export, schedules
+│   │   │   ├── form-builder/       # Form templates, fields, submissions
+│   │   │   ├── ai/                 # AI providers, prompts, generate, usage
+│   │   │   ├── settings/           # System settings key-value store
+│   │   │   ├── approvals/          # Approval workflow
+│   │   │   ├── notifications/      # In-app notifications
+│   │   │   ├── notification-prefs/ # Channel preferences per user
+│   │   │   └── dashboard/          # Stats & my-work
+│   │   ├── db/
+│   │   │   ├── migrations/         # 15 Knex migrations
+│   │   │   └── seeds/              # Demo data
+│   │   └── types/
+│   └── Dockerfile / Dockerfile.dev
+└── client/
+    ├── src/
+    │   ├── api/                    # Axios client + per-module API files
+    │   ├── store/                  # Zustand (auth, ui)
+    │   ├── components/
+    │   │   ├── layout/             # AppShell with navbar + sidebar
+    │   │   ├── common/             # DataTable, FilterBar, Pagination,
+    │   │   │                       # ActivityStream, AttachmentPanel, ApprovalPanel,
+    │   │   │                       # StateIndicator, PriorityBadge, AiAssistPanel
+    │   │   └── charts/             # StatCard
+    │   ├── pages/
+    │   │   ├── Login, Register, Dashboard
+    │   │   ├── incidents/          # IncidentList, IncidentForm
+    │   │   ├── changes/            # ChangeList, ChangeForm
+    │   │   ├── problems/           # ProblemList, ProblemForm
+    │   │   ├── cmdb/               # CiList, CiForm
+    │   │   ├── catalog/            # CatalogBrowse, CatalogItemDetail, CatalogRequestList
+    │   │   ├── knowledge/          # KnowledgeSearch, ArticleView, ArticleEditor
+    │   │   ├── reports/            # ReportList
+    │   │   ├── forms/              # FormTemplateList, FormDesigner, FormRenderer
+    │   │   ├── workflows/          # WorkflowList
+    │   │   ├── approvals/          # MyApprovals
+    │   │   └── admin/              # UserAdmin, SystemSettings, AiProviders, AiPrompts,
+    │   │                           # IntegrationList, NotificationChannels
+    │   └── routes/                 # ProtectedRoute
+    ├── nginx.conf
+    └── Dockerfile / Dockerfile.dev
+```
+
+---
+
+## Architecture
+
+### Table-Driven Engine
+Each module registers its table with the `tableRegistry`, defining columns, states, and transitions. This enables generic CRUD, state machine validation, and polymorphic journal/attachments/audit/approvals (all keyed by `table_name + record_id`).
+
+### Event Bus
+All record creates, updates, and state changes emit typed events. The workflow engine and webhook dispatcher listen to these events and react automatically.
+
+### Authentication
+- JWT access tokens (15 min) stored in memory
+- Refresh tokens (7 days) in httpOnly cookies
+- Passwords hashed with bcrypt (12 rounds)
+- RBAC middleware: `requireRole('admin')`, `requireRole('itil', 'admin')`
+- Self-registration with configurable feature flag
+
+### AI Engine
+- Provider adapters for OpenAI, Anthropic, Ollama, and any custom OpenAI-compatible API
+- API keys encrypted at rest (AES-256)
+- Prompt templates with `{{variable}}` interpolation
+- Usage logging with token counts and user feedback
+
+### SLA Engine
+- SLA definitions match records by condition (e.g., `{ priority: 1 }` -> 60 min)
+- SLA instances track start time, planned end, and breach status
+- Automatically applied on incident creation, completed on resolution
+
+---
+
+## Seed Data
+
+The application seeds itself on first startup with:
+
+- 5 roles, 8 users, 4 assignment groups
+- 12 demo incidents across all states and priorities
+- 5 demo changes with approvals
+- 3 demo problems linked to incidents
+- 5 CI types, 6 CIs with relationships
+- 4 catalog categories, 10 catalog items with dynamic form variables, 3 requests
+- 5 KB categories, 11 KB articles (published + draft)
+- 2 workflow rules (auto-assign P1 incidents, notify on state change)
+- 6 AI prompt templates (ready to use once a provider is configured)
+- 3 notification channels (in-app, email, Slack)
+- 1 sample form template (Employee Onboarding)
+- Journal entries, approval records, 4 SLA definitions

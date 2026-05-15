@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: miniservicenow
+      POSTGRES_USER: msn_user
+      POSTGRES_PASSWORD: msn_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U msn_user -d miniservicenow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: miniservicenow
+      POSTGRES_USER: msn_user
+      POSTGRES_PASSWORD: msn_password
+      JWT_SECRET: dev-jwt-secret-change-in-production
+      JWT_REFRESH_SECRET: dev-refresh-secret-change-in-production
+      SERVER_PORT: 3001
+      CLIENT_URL: http://localhost:3000
+    volumes:
+      - ./server/src:/app/src
+      - ./shared:/app/../shared
+      - server_modules:/app/node_modules
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://localhost:3001/api
+      VITE_API_PROXY: http://server:3001
+    volumes:
+      - ./client/src:/app/src
+      - ./client/index.html:/app/index.html
+      - ./client/vite.config.ts:/app/vite.config.ts
+      - ./shared:/app/../shared
+      - client_modules:/app/node_modules
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
+  server_modules:
+  client_modules:
+  uploads:
