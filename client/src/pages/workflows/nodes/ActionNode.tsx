@@ -17,6 +17,43 @@ const ACTION_LABELS: Record<string, string> = {
   assign_to_group: 'Assign To Group',
   send_notification: 'Send Notification',
   create_journal_entry: 'Create Journal Entry',
+  launch_form: 'Launch Form Task',
+  delay: 'Delay / Timer',
+  call_workflow: 'Call Sub-Workflow',
+  create_approval: 'Create Approval',
+  create_task: 'Create Task',
+  http_request: 'HTTP Request',
+  send_email: 'Send Email',
+  send_slack: 'Send Slack',
+  run_script: 'Run Script',
+  escalate: 'Escalate',
+  if_else: 'If / Else',
+  switch: 'Switch',
+  parallel: 'Parallel',
+  update_record: 'Update Record',
+  log_message: 'Log Message',
+  // Integration provider actions
+  github_create_issue: 'GitHub: Create Issue',
+  github_create_comment: 'GitHub: Comment',
+  github_close_issue: 'GitHub: Close Issue',
+  gitlab_create_issue: 'GitLab: Create Issue',
+  gitlab_create_comment: 'GitLab: Comment',
+  gitlab_close_issue: 'GitLab: Close Issue',
+  jira_create_issue: 'Jira: Create Issue',
+  jira_transition_issue: 'Jira: Transition',
+  jira_add_comment: 'Jira: Comment',
+  pagerduty_trigger: 'PagerDuty: Trigger',
+  pagerduty_acknowledge: 'PagerDuty: Ack',
+  pagerduty_resolve: 'PagerDuty: Resolve',
+  pagerduty_get_oncall: 'PagerDuty: On-Call',
+  teams_send_card: 'Teams: Send Card',
+  teams_send_approval_card: 'Teams: Approval',
+  ado_create_work_item: 'ADO: Work Item',
+  ado_link_work_item: 'ADO: Link',
+  ado_trigger_pipeline: 'ADO: Pipeline',
+  datadog_create_event: 'Datadog: Event',
+  datadog_mute_monitor: 'Datadog: Mute',
+  grafana_create_annotation: 'Grafana: Annotate',
 };
 
 function summarizeAction(action: ActionNodeData['action']): string {
@@ -36,6 +73,30 @@ function summarizeAction(action: ActionNodeData['action']): string {
       return `"${config.title || 'Untitled'}"`;
     case 'create_journal_entry':
       return `${config.journal_type || 'comment'}`;
+    case 'launch_form':
+      return `form: ${config.form_template_name || config.form_template_id || '?'}`;
+    case 'delay':
+      return `wait ${config.duration_minutes || '?'} min`;
+    case 'call_workflow':
+      return `workflow: ${config.target_workflow_name || config.target_workflow_id || '?'}`;
+    case 'create_approval':
+      return `${(config.approver_ids as string[])?.length || 0} approvers`;
+    case 'create_task':
+      return `in ${config.table_name || 'same table'}`;
+    case 'http_request':
+      return `${config.method || 'GET'} ${config.url || '?'}`;
+    case 'send_email':
+      return `to: ${config.to || '?'}`;
+    case 'send_slack':
+      return `message`;
+    case 'run_script':
+      return `script`;
+    case 'escalate':
+      return `${config.escalation_type || 'manager'}`;
+    case 'update_record':
+      return `${config.table_name || 'same table'}`;
+    case 'log_message':
+      return `${config.level || 'info'}: ${config.message || '?'}`;
     default:
       return action.type || 'Unknown';
   }
@@ -82,6 +143,17 @@ export function ActionNode({ data }: NodeProps<ActionNodeData>) {
           {summary}
         </Text>
       </Stack>
+
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{
+          background: '#1864ab',
+          width: 10,
+          height: 10,
+          border: '2px solid #fff',
+        }}
+      />
     </Paper>
   );
 }

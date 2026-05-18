@@ -40,11 +40,15 @@ import { registerChangeModule } from './modules/changes/module';
 import { registerProblemModule } from './modules/problems/module';
 import { registerCmdbModule } from './modules/cmdb/module';
 import { appEngineService } from './modules/app-engine/service';
+import { registerAllProviders } from './integrations/providers/index';
 
 registerIncidentModule();
 registerChangeModule();
 registerProblemModule();
 registerCmdbModule();
+
+// Register integration providers
+registerAllProviders();
 
 // Load custom tables from app engine into table registry
 appEngineService.loadCustomTables().catch((err) => {

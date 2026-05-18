@@ -375,6 +375,9 @@ export interface WorkflowExecution {
 }
 
 // ── Integrations ────────────────────────────────────────
+export type IntegrationProvider = 'github' | 'gitlab' | 'jira' | 'pagerduty' | 'teams' | 'azure_devops' | 'datadog' | 'grafana';
+export type IntegrationStatus = 'connected' | 'error' | 'pending_auth';
+
 export interface Integration {
   id: string;
   name: string;
@@ -387,6 +390,65 @@ export interface Integration {
   created_by: string;
   created_at: string;
   updated_at: string;
+  // Provider integration fields
+  provider?: IntegrationProvider | null;
+  provider_config?: Record<string, unknown>;
+  oauth_tokens?: Record<string, unknown> | null;
+  webhook_secret?: string | null;
+  inbound_webhook_id?: string | null;
+  status?: IntegrationStatus;
+  status_message?: string | null;
+  last_sync_at?: string | null;
+}
+
+export interface IntegrationLink {
+  id: string;
+  integration_id: string;
+  table_name: string;
+  record_id: string;
+  provider: string;
+  external_type: string;
+  external_id: string;
+  external_url?: string | null;
+  external_key?: string | null;
+  title?: string | null;
+  status?: string | null;
+  metadata: Record<string, unknown>;
+  direction: 'outbound' | 'inbound';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProviderMetadata {
+  name: string;
+  displayName: string;
+  icon: string;
+  description: string;
+  configFields: {
+    name: string;
+    label: string;
+    type: string;
+    required?: boolean;
+    placeholder?: string;
+    description?: string;
+    options?: { value: string; label: string }[];
+    defaultValue?: unknown;
+  }[];
+  oauthConfig: { authorizationUrl: string; scopes: string[] } | null;
+  workflowActions: {
+    type: string;
+    label: string;
+    description: string;
+    configFields: {
+      name: string;
+      label: string;
+      type: string;
+      required?: boolean;
+      placeholder?: string;
+      description?: string;
+      options?: { value: string; label: string }[];
+    }[];
+  }[];
 }
 
 export interface IntegrationLog {

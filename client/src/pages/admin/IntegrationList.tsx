@@ -5,9 +5,10 @@ import {
   Switch, Badge, Tabs, Group, Stack, Paper, Text, Code,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconEdit, IconTrash, IconTestPipe, IconList } from '@tabler/icons-react';
+import { IconPlus, IconEdit, IconTrash, IconTestPipe, IconList, IconPlug } from '@tabler/icons-react';
 import { integrationsApi } from '../../api/common.api';
 import { useAuthStore } from '../../store/auth';
+import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import type { Integration } from '@shared/interfaces';
 
@@ -41,6 +42,7 @@ const emptyForm = {
 };
 
 export function IntegrationList() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.roles?.includes('admin');
@@ -182,7 +184,12 @@ export function IntegrationList() {
         <Group justify="space-between">
           <Title order={2}>Integrations</Title>
           {isAdmin && (
-            <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>New Integration</Button>
+            <Group gap="xs">
+              <Button variant="light" leftSection={<IconPlug size={16} />} onClick={() => navigate('/admin/integrations/providers')}>
+                Providers
+              </Button>
+              <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>New Integration</Button>
+            </Group>
           )}
         </Group>
 

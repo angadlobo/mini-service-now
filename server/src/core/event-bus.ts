@@ -35,6 +35,14 @@ class AppEventBus extends EventEmitter {
   emitSlaBreached(tableName: string, recordId: string, data: Record<string, unknown>, userId: string) {
     this.emit('sla.breached', { type: 'sla.breached', tableName, recordId, data, userId });
   }
+
+  emitWebhookReceived(tableName: string, recordId: string, data: Record<string, unknown>, userId: string) {
+    this.emit('webhook.received', { type: 'webhook.received', tableName, recordId, data, userId });
+  }
+
+  emitIntegrationInbound(tableName: string, recordId: string, data: Record<string, unknown>, userId: string) {
+    this.emit('integration.inbound', { type: 'integration.inbound', tableName, recordId, data, userId });
+  }
 }
 
 export const eventBus = new AppEventBus();

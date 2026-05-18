@@ -9,6 +9,7 @@ import { StateIndicator } from '../../components/common/StateIndicator';
 import { PriorityBadge } from '../../components/common/PriorityBadge';
 import { ActivityStream } from '../../components/common/ActivityStream';
 import { AttachmentPanel } from '../../components/common/AttachmentPanel';
+import { IntegrationLinksPanel } from '../../components/integrations/IntegrationLinksPanel';
 import dayjs from 'dayjs';
 
 export function ProblemForm() {
@@ -268,6 +269,7 @@ export function ProblemForm() {
                 </Stack>
               </Paper>
               <AttachmentPanel tableName="problems" recordId={problem.id} />
+              <IntegrationLinksPanel tableName="problems" recordId={problem.id} />
             </Stack>
           )}
         </Grid.Col>

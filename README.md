@@ -204,7 +204,18 @@ Open [http://localhost:3000](http://localhost:3000)
 - Export to CSV
 - Schedule reports (cron-based)
 
-### Webhooks / Integrations
+### Integration Providers (Bidirectional)
+- **8 first-class providers**: GitHub, GitLab, Jira, PagerDuty, Microsoft Teams, Azure DevOps, Datadog, Grafana
+- **Bidirectional data flow**: push actions to external systems and receive inbound webhooks
+- **OAuth2 support**: popup-based OAuth flow for GitHub, GitLab, Jira, Azure DevOps
+- **API key / token auth**: PagerDuty, Datadog, Grafana, Teams webhook URL
+- **Integration links**: linked external resources shown on incident, change, and problem records
+- **Workflow actions**: 22 provider-specific actions available in the workflow designer (e.g. `github_create_issue`, `jira_transition_issue`, `pagerduty_trigger`)
+- **Inbound webhooks**: receive events from external systems with per-provider signature verification
+- **Auto-create incidents**: Datadog, Grafana, and PagerDuty alerts automatically create incidents
+- **Provider config UI**: admin gallery page with dynamic forms, connection testing, and status badges
+
+### Webhooks (Legacy)
 - Push events to external URLs on record create/update/state change
 - Auth types: none, bearer token, basic auth, API key
 - Retry with exponential backoff (3 attempts)
@@ -278,9 +289,21 @@ Open [http://localhost:3000](http://localhost:3000)
 |---|---|---|
 | GET/POST/PUT/DELETE | `/api/workflows` | Workflow rules |
 | GET | `/api/workflows/executions` | Execution log |
-| GET/POST/PUT/DELETE | `/api/integrations` | Webhooks |
-| POST | `/api/integrations/:id/test` | Test webhook |
+| GET/POST/PUT/DELETE | `/api/integrations` | Webhooks / integrations |
+| POST | `/api/integrations/:id/test` | Test connection |
 | GET | `/api/integrations/:id/logs` | Delivery logs |
+
+### Integration Providers
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/integrations/providers` | List all provider metadata |
+| POST | `/api/integrations/:id/oauth/start` | Start OAuth2 flow |
+| GET | `/api/integrations/oauth/callback` | OAuth2 callback |
+| POST | `/api/integrations/:id/oauth/refresh` | Refresh OAuth token |
+| POST | `/api/integrations/hooks/:webhookId` | Inbound webhook (public) |
+| GET | `/api/integrations/links/:table/:recordId` | Get linked resources |
+| POST | `/api/integrations/links` | Create integration link |
+| DELETE | `/api/integrations/links/:id` | Delete integration link |
 
 ### AI
 | Method | Endpoint | Description |
@@ -338,7 +361,13 @@ mini-service-now/
 │   │   │   ├── catalog/            # Categories, items, requests
 │   │   │   ├── knowledge/          # Articles with full-text search
 │   │   │   ├── workflows/          # Automation rule CRUD + execution history
-│   │   │   ├── integrations/       # Webhook CRUD + test + logs
+│   │   │   ├── integrations/       # Webhook CRUD + provider integrations + links
+│   │   ├── integrations/            # Provider abstraction layer
+│   │   │   ├── provider-interface.ts  # Abstract provider class + interfaces
+│   │   │   ├── provider-registry.ts   # Singleton registry for all providers
+│   │   │   ├── oauth-service.ts       # OAuth2 authorization code flow
+│   │   │   ├── inbound-handlers.ts    # Inbound event processing + auto-create
+│   │   │   └── providers/             # 8 provider implementations
 │   │   │   ├── reporting/          # Reports, run, CSV export, schedules
 │   │   │   ├── form-builder/       # Form templates, fields, submissions
 │   │   │   ├── ai/                 # AI providers, prompts, generate, usage
@@ -348,7 +377,7 @@ mini-service-now/
 │   │   │   ├── notification-prefs/ # Channel preferences per user
 │   │   │   └── dashboard/          # Stats & my-work
 │   │   ├── db/
-│   │   │   ├── migrations/         # 15 Knex migrations
+│   │   │   ├── migrations/         # 23 Knex migrations
 │   │   │   └── seeds/              # Demo data
 │   │   └── types/
 │   └── Dockerfile / Dockerfile.dev
@@ -361,6 +390,8 @@ mini-service-now/
     │   │   ├── common/             # DataTable, FilterBar, Pagination,
     │   │   │                       # ActivityStream, AttachmentPanel, ApprovalPanel,
     │   │   │                       # StateIndicator, PriorityBadge, AiAssistPanel
+    │   │   ├── integrations/       # ProviderConfigForm, IntegrationLinksPanel,
+    │   │   │                       # OAuthConnectButton, ProviderCard, StatusBadge
     │   │   └── charts/             # StatCard
     │   ├── pages/
     │   │   ├── Login, Register, Dashboard
@@ -375,7 +406,7 @@ mini-service-now/
     │   │   ├── workflows/          # WorkflowList
     │   │   ├── approvals/          # MyApprovals
     │   │   └── admin/              # UserAdmin, SystemSettings, AiProviders, AiPrompts,
-    │   │                           # IntegrationList, NotificationChannels
+    │   │                           # IntegrationList, IntegrationProviders, NotificationChannels
     │   └── routes/                 # ProtectedRoute
     ├── nginx.conf
     └── Dockerfile / Dockerfile.dev
@@ -389,7 +420,10 @@ mini-service-now/
 Each module registers its table with the `tableRegistry`, defining columns, states, and transitions. This enables generic CRUD, state machine validation, and polymorphic journal/attachments/audit/approvals (all keyed by `table_name + record_id`).
 
 ### Event Bus
-All record creates, updates, and state changes emit typed events. The workflow engine and webhook dispatcher listen to these events and react automatically.
+All record creates, updates, and state changes emit typed events. The workflow engine, webhook dispatcher, and integration providers listen to these events and react automatically. The `integration.inbound` event type enables workflows to trigger on external events received from provider webhooks.
+
+### Integration Provider System
+A pluggable provider abstraction layer (`IntegrationProvider` abstract class) enables first-class integrations with external tools. Each provider defines its auth method, config fields, inbound webhook verification, and workflow actions. The `providerRegistry` singleton manages all registered providers and enables the workflow engine to delegate provider-specific actions automatically. OAuth2 flows use transient state sessions stored in the database with popup-based client authorization.
 
 ### Authentication
 - JWT access tokens (15 min) stored in memory
@@ -427,3 +461,6 @@ The application seeds itself on first startup with:
 - 3 notification channels (in-app, email, Slack)
 - 1 sample form template (Employee Onboarding)
 - Journal entries, approval records, 4 SLA definitions
+- 6 integration providers (GitHub, Jira, PagerDuty, Teams, Datadog, Grafana) with sample configs
+- 7 integration links connecting external resources to incidents, changes, and problems
+- Sample integration delivery logs for inbound and outbound events

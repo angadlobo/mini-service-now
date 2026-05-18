@@ -22,7 +22,9 @@ import { CiList } from './pages/cmdb/CiList';
 import { CiForm } from './pages/cmdb/CiForm';
 import { WorkflowList } from './pages/workflows/WorkflowList';
 import { WorkflowDesigner } from './pages/workflows/WorkflowDesigner';
+import { WorkflowMonitoring } from './pages/workflows/WorkflowMonitoring';
 import { IntegrationList } from './pages/admin/IntegrationList';
+import { IntegrationProviders } from './pages/admin/IntegrationProviders';
 import { ReportList } from './pages/reports/ReportList';
 import { FormTemplateList } from './pages/forms/FormTemplateList';
 import { FormDesigner } from './pages/forms/FormDesigner';
@@ -39,7 +41,13 @@ import { DashboardDesigner } from './pages/admin/app-engine/DashboardDesigner';
 import { DynamicList } from './pages/app-engine/DynamicList';
 import { DynamicForm } from './pages/app-engine/DynamicForm';
 import { DashboardView } from './pages/app-engine/DashboardView';
+import { ChangeCalendar } from './pages/changes/ChangeCalendar';
+import { ChangeDashboard } from './pages/changes/ChangeDashboard';
+import { ChangeTemplates } from './pages/changes/ChangeTemplates';
+import { CABDashboard } from './pages/changes/CABDashboard';
+import { MaintenanceWindows } from './pages/changes/MaintenanceWindows';
 import { ProtectedRoute } from './routes/ProtectedRoute';
+import { ChatBot } from './components/common/ChatBot';
 
 export default function App() {
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
@@ -56,6 +64,7 @@ export default function App() {
 
   return (
     <AppShell>
+      <ChatBot />
       <Routes>
         <Route path="/" element={<Dashboard />} />
 
@@ -67,6 +76,11 @@ export default function App() {
         {/* Changes */}
         <Route path="/changes" element={<ChangeList />} />
         <Route path="/changes/new" element={<ProtectedRoute roles={['admin', 'itil']}><ChangeForm /></ProtectedRoute>} />
+        <Route path="/changes/dashboard" element={<ChangeDashboard />} />
+        <Route path="/changes/calendar" element={<ChangeCalendar />} />
+        <Route path="/changes/templates" element={<ProtectedRoute roles={['admin']}><ChangeTemplates /></ProtectedRoute>} />
+        <Route path="/changes/cab" element={<ProtectedRoute roles={['admin', 'itil']}><CABDashboard /></ProtectedRoute>} />
+        <Route path="/changes/maintenance-windows" element={<ProtectedRoute roles={['admin']}><MaintenanceWindows /></ProtectedRoute>} />
         <Route path="/changes/:id" element={<ChangeForm />} />
 
         {/* Problems */}
@@ -107,7 +121,9 @@ export default function App() {
         <Route path="/admin/workflows" element={<ProtectedRoute roles={['admin']}><WorkflowList /></ProtectedRoute>} />
         <Route path="/admin/workflows/new" element={<ProtectedRoute roles={['admin']}><WorkflowDesigner /></ProtectedRoute>} />
         <Route path="/admin/workflows/:id/edit" element={<ProtectedRoute roles={['admin']}><WorkflowDesigner /></ProtectedRoute>} />
+        <Route path="/admin/workflows/monitoring" element={<ProtectedRoute roles={['admin']}><WorkflowMonitoring /></ProtectedRoute>} />
         <Route path="/admin/integrations" element={<ProtectedRoute roles={['admin']}><IntegrationList /></ProtectedRoute>} />
+        <Route path="/admin/integrations/providers" element={<ProtectedRoute roles={['admin']}><IntegrationProviders /></ProtectedRoute>} />
         <Route path="/admin/ai-providers" element={<ProtectedRoute roles={['admin']}><AiProviders /></ProtectedRoute>} />
         <Route path="/admin/ai-prompts" element={<ProtectedRoute roles={['admin']}><AiPrompts /></ProtectedRoute>} />
         <Route path="/admin/notification-channels" element={<ProtectedRoute roles={['admin']}><NotificationChannels /></ProtectedRoute>} />

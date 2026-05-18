@@ -10,6 +10,8 @@ import { StateIndicator } from '../../components/common/StateIndicator';
 import { PriorityBadge } from '../../components/common/PriorityBadge';
 import { ActivityStream } from '../../components/common/ActivityStream';
 import { AttachmentPanel } from '../../components/common/AttachmentPanel';
+import { WorkflowActivity } from '../../components/common/WorkflowActivity';
+import { IntegrationLinksPanel } from '../../components/integrations/IntegrationLinksPanel';
 import { useAuthStore } from '../../store/auth';
 import dayjs from 'dayjs';
 
@@ -197,6 +199,8 @@ export function IncidentForm() {
                 </Stack>
               </Paper>
               <AttachmentPanel tableName="incidents" recordId={incident.id} />
+              <WorkflowActivity tableName="incidents" recordId={incident.id} />
+              <IntegrationLinksPanel tableName="incidents" recordId={incident.id} />
             </Stack>
           )}
         </Grid.Col>

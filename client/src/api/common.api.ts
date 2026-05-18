@@ -3,6 +3,7 @@ import type {
   JournalEntry, Attachment, AuditEntry, Approval, Notification, DashboardStats,
   User, PaginatedResponse, QueryParams, Problem, ConfigurationItem, CiType,
   CiRelationship, WorkflowRule, WorkflowExecution, Integration, IntegrationLog,
+  IntegrationLink, ProviderMetadata,
   Report, FormTemplate, FormSubmission, AiProvider, AiPrompt, SystemSetting,
 } from '@shared/interfaces';
 
@@ -97,6 +98,27 @@ export const workflowsApi = {
   update: (id: string, data: Partial<WorkflowRule>) => api.put<WorkflowRule>(`/workflows/${id}`, data).then(r => r.data),
   delete: (id: string) => api.delete(`/workflows/${id}`).then(r => r.data),
   getExecutions: (params?: QueryParams) => api.get<PaginatedResponse<WorkflowExecution>>('/workflows/executions', { params }).then(r => r.data),
+  getRecordExecutions: (tableName: string, recordId: string) => api.get(`/workflows/executions/record/${tableName}/${recordId}`).then(r => r.data),
+  exportWorkflow: (id: string) => api.get(`/workflows/${id}/export`).then(r => r.data),
+  importWorkflow: (pkg: any) => api.post('/workflows/import', pkg).then(r => r.data),
+  getFormTasks: () => api.get('/workflows/form-tasks').then(r => r.data),
+  submitFormTask: (id: string, data: any) => api.post(`/workflows/form-tasks/${id}/submit`, data).then(r => r.data),
+  simulate: (id: string, record: Record<string, unknown>) => api.post(`/workflows/${id}/simulate`, { record }).then(r => r.data),
+
+  // Monitoring
+  getMonitoringStats: () => api.get('/workflows/monitoring/stats').then(r => r.data),
+  getActionLogs: (executionId: string) => api.get(`/workflows/monitoring/action-logs/${executionId}`).then(r => r.data),
+  retryExecution: (executionId: string) => api.post(`/workflows/monitoring/retry/${executionId}`).then(r => r.data),
+
+  // Webhooks
+  listWebhooks: () => api.get('/workflows/webhooks').then(r => r.data),
+  createWebhook: (workflowRuleId: string) => api.post('/workflows/webhooks', { workflow_rule_id: workflowRuleId }).then(r => r.data),
+  deleteWebhook: (id: string) => api.delete(`/workflows/webhooks/${id}`).then(r => r.data),
+
+  // Triggers
+  listTriggers: (workflowRuleId?: string) => api.get('/workflows/triggers', { params: workflowRuleId ? { workflow_rule_id: workflowRuleId } : {} }).then(r => r.data),
+  createTrigger: (data: { workflow_rule_id: string; type: string; config: Record<string, unknown> }) => api.post('/workflows/triggers', data).then(r => r.data),
+  deleteTrigger: (id: string) => api.delete(`/workflows/triggers/${id}`).then(r => r.data),
 };
 
 // ── Integrations ──────────────────────────────────────
@@ -108,6 +130,14 @@ export const integrationsApi = {
   delete: (id: string) => api.delete(`/integrations/${id}`).then(r => r.data),
   test: (id: string) => api.post(`/integrations/${id}/test`).then(r => r.data),
   getLogs: (id: string, params?: QueryParams) => api.get<PaginatedResponse<IntegrationLog>>(`/integrations/${id}/logs`, { params }).then(r => r.data),
+  // Provider integrations
+  getProviders: () => api.get<ProviderMetadata[]>('/integrations/providers').then(r => r.data),
+  startOAuth: (id: string, redirectUri?: string) => api.post<{ authorizationUrl: string }>(`/integrations/${id}/oauth/start`, { redirect_uri: redirectUri }).then(r => r.data),
+  refreshOAuth: (id: string) => api.post(`/integrations/${id}/oauth/refresh`).then(r => r.data),
+  // Integration links
+  getLinks: (tableName: string, recordId: string) => api.get<IntegrationLink[]>(`/integrations/links/${tableName}/${recordId}`).then(r => r.data),
+  createLink: (data: Partial<IntegrationLink>) => api.post<IntegrationLink>('/integrations/links', data).then(r => r.data),
+  deleteLink: (id: string) => api.delete(`/integrations/links/${id}`).then(r => r.data),
 };
 
 // ── Reports ───────────────────────────────────────────
@@ -149,6 +179,8 @@ export const aiApi = {
 
   generate: (promptId: string, context: Record<string, string>) =>
     api.post<{ text: string; logId: string; tokensUsed: number }>('/ai/generate', { promptId, context }).then(r => r.data),
+  chat: (message: string, context?: string) =>
+    api.post<{ text: string; tokensUsed: number }>('/ai/chat', { message, context }).then(r => r.data),
   feedback: (logId: string, feedback: 'helpful' | 'not_helpful') =>
     api.post('/ai/feedback', { logId, feedback }).then(r => r.data),
   getUsage: () => api.get('/ai/usage').then(r => r.data),
@@ -167,6 +199,7 @@ export const notificationPrefsApi = {
   createChannel: (data: any) => api.post('/notification-prefs/channels', data).then(r => r.data),
   updateChannel: (id: string, data: any) => api.put(`/notification-prefs/channels/${id}`, data).then(r => r.data),
   deleteChannel: (id: string) => api.delete(`/notification-prefs/channels/${id}`).then(r => r.data),
+  testChannel: (id: string) => api.post<{ success: boolean; message: string }>(`/notification-prefs/channels/${id}/test`).then(r => r.data),
   getPreferences: () => api.get('/notification-prefs/preferences').then(r => r.data),
   setPreference: (data: { channel_id: string; events: string[]; active: boolean }) =>
     api.put('/notification-prefs/preferences', data).then(r => r.data),
