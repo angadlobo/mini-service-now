@@ -65,6 +65,12 @@ Log in with `admin` / `admin123` to get full access to all features.
 | `end.user` | `user123` | User | Create incidents, browse catalog, submit requests, read KB |
 | `approver` | `approver123` | Approver + ITIL | Approve changes and catalog requests + ITIL operations |
 | `kb.manager` | `kb123` | Knowledge Manager + ITIL | Manage KB articles + ITIL operations |
+| `beth.service` | `beth123` | ITIL | Service Desk + DevOps agent |
+| `charlie.ops` | `charlie123` | ITIL | Network Operations lead |
+| `diana.dev` | `diana123` | User | Developer / end user |
+| `frank.network` | `frank123` | ITIL | Network Operations engineer |
+| `grace.sec` | `grace123` | Approver + ITIL | Security team / change approver |
+| `hector.mgr` | `hector123` | Approver + ITIL | DevOps manager / change approver |
 
 You can also register a new account from the login page (self-registration is enabled by default).
 
@@ -449,18 +455,25 @@ A pluggable provider abstraction layer (`IntegrationProvider` abstract class) en
 
 The application seeds itself on first startup with:
 
-- 5 roles, 8 users, 4 assignment groups
-- 12 demo incidents across all states and priorities
-- 5 demo changes with approvals
-- 3 demo problems linked to incidents
-- 5 CI types, 6 CIs with relationships
-- 4 catalog categories, 10 catalog items with dynamic form variables, 3 requests
-- 5 KB categories, 11 KB articles (published + draft)
-- 2 workflow rules (auto-assign P1 incidents, notify on state change)
+- 5 roles, 11 users (admin, ITIL agents, end users, approvers, managers), 4 assignment groups
+- 20 demo incidents across all states and priorities (INC1001-INC1020) with journal entries
+- 10 demo changes with approvals, affected CIs, and linked incidents/problems (CHG1001-CHG1010)
+- 3 demo problems linked to incidents and changes
+- 5 CI types, 16 CIs with relationships (servers, switches, load balancer, SAN, WAF, AD, Citrix, print server)
+- 4 catalog categories, 10 catalog items with dynamic form variables, 8 requests across all states
+- 5 KB categories, 15 KB articles (published + draft) covering networking, security, software, and policies
+- 7 workflow rules with triggers, webhooks, and scheduled runs (auto-assign, escalate, notify, auto-close, Slack alerts)
+- 11+ workflow executions with action logs for workflow monitoring dashboard
+- 6 change templates (3 standard pre-approved, 2 normal CAB-required, 1 emergency)
+- 3 maintenance windows (weekly, monthly, quarterly) and 2 blackout windows
+- 3 CAB meetings with agenda items, votes, and meeting minutes
+- 4 change approval rules (by risk level, change type, and impact)
+- 7 reports with 3 scheduled report deliveries (incident, change, asset, problem reports)
 - 6 AI prompt templates (ready to use once a provider is configured)
 - 3 notification channels (in-app, email, Slack)
-- 1 sample form template (Employee Onboarding)
-- Journal entries, approval records, 4 SLA definitions
+- 2 form templates (Employee Onboarding, Change Request Intake) with 4 submissions
+- 15+ approval records across changes and catalog requests
+- Journal entries on incidents, changes, and problems, 4 SLA definitions
 - 6 integration providers (GitHub, Jira, PagerDuty, Teams, Datadog, Grafana) with sample configs
 - 7 integration links connecting external resources to incidents, changes, and problems
 - Sample integration delivery logs for inbound and outbound events
