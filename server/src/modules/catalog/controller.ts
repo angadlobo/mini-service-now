@@ -32,8 +32,9 @@ export class CatalogController {
 
   async listRequests(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const options = parseQueryParams(req.query as Record<string, unknown>);
-      const myOnly = req.query.my === 'true';
+      const { my, ...queryParams } = req.query as Record<string, unknown>;
+      const options = parseQueryParams(queryParams);
+      const myOnly = my === 'true';
       const result = await catalogService.listRequests(options, myOnly ? req.user!.id : undefined);
       res.json(result);
     } catch (err) { next(err); }

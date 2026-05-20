@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Stack, Title, Group, SegmentedControl } from '@mantine/core';
+import { Stack, Title, Group, SegmentedControl, Paper } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { catalogApi } from '../../api/catalog.api';
 import { DataTable } from '../../components/common/DataTable';
@@ -19,7 +19,7 @@ export function CatalogRequestList() {
   });
 
   const columns = [
-    { key: 'number', label: 'Number', width: 110, render: (r: any) => <span style={{ fontWeight: 600, color: '#228be6' }}>{r.number}</span> },
+    { key: 'number', label: 'Number', width: 110, render: (r: any) => <span style={{ fontWeight: 600, color: 'var(--mantine-primary-color-filled)' }}>{r.number}</span> },
     { key: 'catalog_item_name', label: 'Item', render: (r: any) => r.catalog_item_name || '-' },
     { key: 'requested_by_name', label: 'Requested By', width: 150, render: (r: any) => r.requested_by_name || '-' },
     { key: 'state', label: 'State', width: 120, render: (r: any) => <StateIndicator state={r.state} /> },
@@ -27,10 +27,12 @@ export function CatalogRequestList() {
   ];
 
   return (
-    <Stack>
+    <Stack className="fade-in">
       <Group justify="space-between">
-        <Title order={2}>Catalog Requests</Title>
-        <SegmentedControl data={[{ value: 'my', label: 'My Requests' }, { value: 'all', label: 'All Requests' }]} value={view} onChange={setView} />
+        <Title order={2} className="page-title">Catalog Requests</Title>
+        <Paper p="xs" radius="lg" style={{ background: 'var(--glass-bg)', backdropFilter: 'var(--glass-blur)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}>
+          <SegmentedControl data={[{ value: 'my', label: 'My Requests' }, { value: 'all', label: 'All Requests' }]} value={view} onChange={setView} radius="md" />
+        </Paper>
       </Group>
       <DataTable columns={columns} data={data?.data || []} loading={isLoading} />
       {data && <Pagination page={data.page} totalPages={data.totalPages} pageSize={data.pageSize} total={data.total} onPageChange={setPage} />}

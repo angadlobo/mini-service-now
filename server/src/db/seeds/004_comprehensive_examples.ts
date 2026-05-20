@@ -1,5 +1,6 @@
 import { Knex } from 'knex';
 import { v4 as uuid } from 'uuid';
+import bcrypt from 'bcryptjs';
 
 export async function seed(knex: Knex): Promise<void> {
   // Only seed if change_templates table exists and is empty
@@ -54,7 +55,6 @@ export async function seed(knex: Knex): Promise<void> {
   const userRole = await knex('roles').where('name', 'user').first();
   const approverRole = await knex('roles').where('name', 'approver').first();
 
-  const bcrypt = await import('bcryptjs');
   const hash = (pw: string) => bcrypt.hashSync(pw, 12);
 
   await knex('users').insert([
@@ -514,9 +514,9 @@ export async function seed(knex: Knex): Promise<void> {
 
   // Report schedules
   await knex('report_schedules').insert([
-    { report_id: reportIds.r1, cron: '0 8 * * 1', format: 'csv', recipients: ['admin@example.com', 'itil@example.com'], active: true },
-    { report_id: reportIds.r4, cron: '0 9 * * 5', format: 'csv', recipients: ['admin@example.com'], active: true },
-    { report_id: reportIds.r5, cron: '0 6 1 * *', format: 'csv', recipients: ['admin@example.com', 'charlie@example.com'], active: true },
+    { report_id: reportIds.r1, cron: '0 8 * * 1', format: 'csv', recipients: '{admin@example.com,itil@example.com}', active: true },
+    { report_id: reportIds.r4, cron: '0 9 * * 5', format: 'csv', recipients: '{admin@example.com}', active: true },
+    { report_id: reportIds.r5, cron: '0 6 1 * *', format: 'csv', recipients: '{admin@example.com,charlie@example.com}', active: true },
   ]);
 
   // ══════════════════════════════════════════════════════

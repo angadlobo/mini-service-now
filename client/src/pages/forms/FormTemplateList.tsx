@@ -35,11 +35,11 @@ export function FormTemplateList() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Form Templates</Title>
-        <Button onClick={() => navigate('/forms/designer')}>Create Form</Button>
+        <Title order={2} className="page-title">Form Templates</Title>
+        <Button className="gradient-btn" onClick={() => navigate('/forms/new')}>Create Form</Button>
       </Group>
 
-      <Table striped highlightOnHover withTableBorder>
+      <Table striped highlightOnHover withTableBorder className="glass-table">
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
@@ -62,10 +62,10 @@ export function FormTemplateList() {
               <Table.Td><Badge color={t.active ? 'green' : 'gray'}>{t.active ? 'Yes' : 'No'}</Badge></Table.Td>
               <Table.Td>
                 <Group gap="xs">
-                  <ActionIcon variant="subtle" onClick={() => navigate(`/forms/render/${t.id}`)} title="Preview">
+                  <ActionIcon variant="subtle" onClick={() => navigate(`/forms/${t.id}/fill`)} title="Preview">
                     <IconEye size={16} />
                   </ActionIcon>
-                  <ActionIcon variant="subtle" onClick={() => navigate(`/forms/designer/${t.id}`)} title="Edit">
+                  <ActionIcon variant="subtle" onClick={() => navigate(`/forms/${t.id}/edit`)} title="Edit">
                     <IconPencil size={16} />
                   </ActionIcon>
                   <ActionIcon variant="subtle" color="red" onClick={() => deleteMutation.mutate(t.id)} title="Delete">

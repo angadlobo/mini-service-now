@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Stack, Title, Grid, TextInput, Select, NumberInput, Group, Button,
-  Paper, Text, LoadingOverlay, Divider, Table, ActionIcon,
+  Paper, Text, LoadingOverlay, Divider, Table, ActionIcon, Box,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconDeviceFloppy, IconArrowLeft, IconPlus, IconTrash } from '@tabler/icons-react';
@@ -155,13 +155,13 @@ export function CiForm() {
         <Button variant="subtle" leftSection={<IconArrowLeft size={16} />} onClick={() => navigate('/cmdb/cis')}>
           Back
         </Button>
-        <Title order={2}>{isNew ? 'New Configuration Item' : `${ci?.number || ''}`}</Title>
+        <Title order={2} className="page-title">{isNew ? 'New Configuration Item' : `${ci?.number || ''}`}</Title>
         {ci && <StateIndicator state={ci.status} />}
       </Group>
 
       <Grid>
         <Grid.Col span={{ base: 12, md: 8 }}>
-          <Paper withBorder p="md" pos="relative">
+          <Paper p="md" radius="lg" pos="relative" style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
             <LoadingOverlay visible={isLoading} />
             <Stack>
               <TextInput label="Name" required value={form.name}
@@ -197,7 +197,7 @@ export function CiForm() {
                 </Grid.Col>
               </Grid>
               <Group justify="flex-end">
-                <Button leftSection={<IconDeviceFloppy size={16} />} onClick={() => save.mutate()} loading={save.isPending}>
+                <Button leftSection={<IconDeviceFloppy size={16} />} onClick={() => save.mutate()} loading={save.isPending} className="gradient-btn">
                   {isNew ? 'Create' : 'Update'}
                 </Button>
               </Group>
@@ -205,9 +205,9 @@ export function CiForm() {
           </Paper>
 
           {!isNew && (
-            <Paper withBorder p="md" mt="md">
+            <Paper p="md" mt="md" radius="lg" style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
               <Title order={4} mb="sm">Relationships</Title>
-              <Table striped withTableBorder>
+              <Table striped withTableBorder style={{ borderRadius: '8px', overflow: 'hidden' }}>
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th>Type</Table.Th>
@@ -245,7 +245,10 @@ export function CiForm() {
 
         <Grid.Col span={{ base: 12, md: 4 }}>
           {!isNew && ci && (
-            <Paper withBorder p="md">
+            <Paper p="md" radius="lg" style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+              <Box mb="sm" p="sm" style={{ background: 'linear-gradient(135deg, rgba(105,65,198,0.1), rgba(59,130,246,0.1))', borderRadius: '8px' }}>
+                <Text fw={700} size="sm" c="violet.7">CI Details</Text>
+              </Box>
               <Stack gap="xs">
                 <Text size="sm"><Text span fw={600}>Number:</Text> {ci.number}</Text>
                 <Text size="sm"><Text span fw={600}>Type:</Text> {ci.ci_type_name || '-'}</Text>

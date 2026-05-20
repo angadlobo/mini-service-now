@@ -25,6 +25,15 @@ export class SettingsController {
     } catch (err) { next(err); }
   }
 
+  async getBranding(_req: Request, res: Response, next: NextFunction) {
+    try {
+      const settings = await settingsService.getByCategory('branding');
+      const result: Record<string, string> = {};
+      settings.forEach((s: any) => { result[s.key] = s.value; });
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       await settingsService.bulkUpdate(req.body.settings);

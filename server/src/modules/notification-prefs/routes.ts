@@ -9,6 +9,7 @@ router.get('/channels', authenticate, requireRole('admin'), (req, res, next) => 
 router.post('/channels', authenticate, requireRole('admin'), (req, res, next) => notificationPrefsController.createChannel(req, res, next));
 router.put('/channels/:id', authenticate, requireRole('admin'), (req, res, next) => notificationPrefsController.updateChannel(req, res, next));
 router.delete('/channels/:id', authenticate, requireRole('admin'), (req, res, next) => notificationPrefsController.deleteChannel(req, res, next));
+router.post('/channels/:id/test', authenticate, requireRole('admin'), (req, res, next) => notificationPrefsController.testChannel(req, res, next));
 
 // User preferences
 router.get('/preferences', authenticate, (req, res, next) => notificationPrefsController.getUserPreferences(req, res, next));

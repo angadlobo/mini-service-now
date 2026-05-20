@@ -41,6 +41,10 @@ export class ReportingController {
     } catch (err) { next(err); }
   }
 
+  async getTableColumns(req: Request, res: Response, next: NextFunction) {
+    try { res.json(await reportingService.getTableColumns(req.params.tableName)); } catch (err) { next(err); }
+  }
+
   async getSchedules(req: Request, res: Response, next: NextFunction) {
     try { res.json(await reportingService.getSchedules(req.params.id)); } catch (err) { next(err); }
   }

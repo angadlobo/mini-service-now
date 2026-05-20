@@ -19,7 +19,9 @@ export class SettingsService {
     if (existing) {
       await db('sys_settings').where('key', key).update({ value, updated_at: new Date() });
     } else {
-      await db('sys_settings').insert({ key, value });
+      // Derive category from key prefix (e.g., "branding.app_name" -> "branding")
+      const category = key.includes('.') ? key.split('.')[0] : 'general';
+      await db('sys_settings').insert({ key, value, category });
     }
   }
 

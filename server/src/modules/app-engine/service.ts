@@ -235,6 +235,12 @@ export class AppEngineService {
   }
 
   // ── Pages CRUD ─────────────────────────────────────
+  async getPageById(id: string) {
+    const page = await db('app_engine_pages').where('id', id).first();
+    if (!page) throw new AppError(404, 'Page not found');
+    return page;
+  }
+
   async listPages(appId: string) {
     return db('app_engine_pages').where('app_id', appId).orderBy('sort_order');
   }

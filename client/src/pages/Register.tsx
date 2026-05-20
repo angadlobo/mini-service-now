@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import {
-  Paper, TextInput, PasswordInput, Button, Title, Text, Stack, Center, Alert, Progress, Anchor,
+  Paper, TextInput, PasswordInput, Button, Title, Text, Stack, Center, Alert, Progress, Box,
 } from '@mantine/core';
-import { IconAlertCircle, IconCheck } from '@tabler/icons-react';
+import { IconAlertCircle } from '@tabler/icons-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authApi } from '../api/auth.api';
+import { useUiStore } from '../store/ui';
 
 function getPasswordStrength(password: string): { score: number; color: string; label: string } {
   let score = 0;
@@ -21,8 +22,17 @@ function getPasswordStrength(password: string): { score: number; color: string; 
   return { score: Math.min(score, 100), color: 'green', label: 'Strong' };
 }
 
+const inputStyles = {
+  input: {
+    background: 'rgba(255,255,255,0.1)',
+    border: '1px solid rgba(255,255,255,0.2)',
+    color: 'white',
+  },
+};
+
 export function Register() {
   const navigate = useNavigate();
+  const { appName, logoUrl } = useUiStore();
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -67,15 +77,85 @@ export function Register() {
   };
 
   return (
-    <Center h="100vh" bg="gray.0">
-      <Paper shadow="md" p={40} radius="md" w={460}>
-        <Stack align="center" mb="lg">
-          <Title order={2} c="blue">Mini ServiceNow</Title>
-          <Text c="dimmed" size="sm">Create a new account</Text>
+    <Center
+      h="100vh"
+      style={{
+        background: 'linear-gradient(135deg, #1e3a5f 0%, #2d1b69 40%, #1a1a2e 70%, #0f3443 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Floating background shapes */}
+      {!window.matchMedia('(prefers-reduced-motion: reduce)').matches && (
+        <>
+          <Box
+            className="floating-shape"
+            style={{
+              top: '10%', left: '10%',
+              width: 300, height: 300,
+              background: 'var(--gradient-primary)',
+            }}
+          />
+          <Box
+            className="floating-shape"
+            style={{
+              top: '60%', right: '5%',
+              width: 200, height: 200,
+              background: 'linear-gradient(135deg, #43e97b, #38f9d7)',
+            }}
+          />
+          <Box
+            className="floating-shape"
+            style={{
+              bottom: '10%', left: '30%',
+              width: 250, height: 250,
+              background: 'linear-gradient(135deg, #f7971e, #ffd200)',
+            }}
+          />
+        </>
+      )}
+
+      <Paper
+        p={40}
+        radius="xl"
+        w={460}
+        style={{
+          background: 'rgba(255, 255, 255, 0.12)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          position: 'relative',
+          zIndex: 1,
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}
+      >
+        <Stack align="center" mb="xl">
+          {logoUrl ? (
+            <img src={logoUrl} alt={appName} style={{ width: 56, height: 56, borderRadius: 16, objectFit: 'contain' }} />
+          ) : (
+            <Box
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                background: 'var(--gradient-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 20px rgba(102, 126, 234, 0.5)',
+              }}
+            >
+              <Text size="xl" fw={800} c="white">{appName.charAt(0)}</Text>
+            </Box>
+          )}
+          <Title order={2} c="white" style={{ letterSpacing: '-0.5px' }}>{appName}</Title>
+          <Text c="rgba(255,255,255,0.6)" size="sm">Create a new account</Text>
         </Stack>
 
         {error && (
-          <Alert icon={<IconAlertCircle size={16} />} color="red" mb="md" variant="light">
+          <Alert icon={<IconAlertCircle size={16} />} color="red" mb="md" variant="light" radius="md">
             {error}
           </Alert>
         )}
@@ -83,40 +163,45 @@ export function Register() {
         <form onSubmit={handleSubmit}>
           <Stack>
             <TextInput
-              label="Username"
+              label={<Text size="sm" c="rgba(255,255,255,0.7)">Username</Text>}
               placeholder="Choose a username"
               required
               value={form.username}
               onChange={handleChange('username')}
+              styles={inputStyles}
             />
             <TextInput
-              label="Email"
+              label={<Text size="sm" c="rgba(255,255,255,0.7)">Email</Text>}
               placeholder="your@email.com"
               type="email"
               required
               value={form.email}
               onChange={handleChange('email')}
+              styles={inputStyles}
             />
             <TextInput
-              label="First Name"
+              label={<Text size="sm" c="rgba(255,255,255,0.7)">First Name</Text>}
               placeholder="First name"
               required
               value={form.first_name}
               onChange={handleChange('first_name')}
+              styles={inputStyles}
             />
             <TextInput
-              label="Last Name"
+              label={<Text size="sm" c="rgba(255,255,255,0.7)">Last Name</Text>}
               placeholder="Last name"
               required
               value={form.last_name}
               onChange={handleChange('last_name')}
+              styles={inputStyles}
             />
             <PasswordInput
-              label="Password"
+              label={<Text size="sm" c="rgba(255,255,255,0.7)">Password</Text>}
               placeholder="Create a password"
               required
               value={form.password}
               onChange={handleChange('password')}
+              styles={inputStyles}
             />
 
             {form.password.length > 0 && (
@@ -127,7 +212,7 @@ export function Register() {
             )}
 
             <PasswordInput
-              label="Confirm Password"
+              label={<Text size="sm" c="rgba(255,255,255,0.7)">Confirm Password</Text>}
               placeholder="Re-enter your password"
               required
               value={form.confirm_password}
@@ -137,19 +222,30 @@ export function Register() {
                   ? 'Passwords do not match'
                   : undefined
               }
+              styles={inputStyles}
             />
 
-            <Button type="submit" fullWidth loading={registerMutation.isPending}>
+            <Button
+              type="submit"
+              fullWidth
+              loading={registerMutation.isPending}
+              size="md"
+              style={{
+                background: 'var(--gradient-primary)',
+                border: 'none',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+              }}
+            >
               Create Account
             </Button>
           </Stack>
         </form>
 
-        <Text c="dimmed" size="sm" ta="center" mt="lg">
-          Already have an account?{' '}
-          <Anchor component={Link} to="/login" size="sm">
+        <Text size="sm" ta="center" mt="lg">
+          <Text component="span" c="rgba(255,255,255,0.5)" inherit>Already have an account? </Text>
+          <Text component={Link} to="/login" c="rgba(255,255,255,0.9)" inherit fw={500}>
             Sign in
-          </Anchor>
+          </Text>
         </Text>
       </Paper>
     </Center>

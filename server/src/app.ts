@@ -33,12 +33,15 @@ import aiRoutes from './modules/ai/routes';
 import notificationPrefsRoutes from './modules/notification-prefs/routes';
 import appEngineRoutes from './modules/app-engine/routes';
 import dynamicCrudRoutes from './modules/app-engine/dynamic-crud.routes';
+import releaseRoutes from './modules/releases/routes';
+import chatbotRoutes from './core/chatbot/routes';
 
 // Register modules
 import { registerIncidentModule } from './modules/incidents/module';
 import { registerChangeModule } from './modules/changes/module';
 import { registerProblemModule } from './modules/problems/module';
 import { registerCmdbModule } from './modules/cmdb/module';
+import { registerReleaseModule } from './modules/releases/module';
 import { appEngineService } from './modules/app-engine/service';
 import { registerAllProviders } from './integrations/providers/index';
 
@@ -46,6 +49,7 @@ registerIncidentModule();
 registerChangeModule();
 registerProblemModule();
 registerCmdbModule();
+registerReleaseModule();
 
 // Register integration providers
 registerAllProviders();
@@ -86,6 +90,9 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Chatbot webhook routes (public, no auth middleware)
+app.use('/api/chatbot', chatbotRoutes);
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -106,6 +113,7 @@ app.use('/api/forms', formBuilderRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/notification-prefs', notificationPrefsRoutes);
 app.use('/api/app-engine', appEngineRoutes);
+app.use('/api/releases', releaseRoutes);
 app.use('/api/x', dynamicCrudRoutes);
 
 // ── Journal (comments/work notes) ────────────────────

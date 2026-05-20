@@ -101,6 +101,13 @@ export class AppEngineController {
   }
 
   // ── Pages ──────────────────────────────────────────
+  async getPage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const page = await appEngineService.getPageById(req.params.id);
+      res.json(page);
+    } catch (err) { next(err); }
+  }
+
   async listPages(req: Request, res: Response, next: NextFunction) {
     try {
       const appId = req.query.app_id as string;

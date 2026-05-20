@@ -44,7 +44,7 @@ export function CiList() {
     {
       key: 'number', label: 'Number', sortable: true, width: 120,
       render: (r: ConfigurationItem) => (
-        <span style={{ fontWeight: 600, color: '#228be6' }}>{r.number}</span>
+        <span style={{ fontWeight: 600, color: 'var(--mantine-primary-color-filled)' }}>{r.number}</span>
       ),
     },
     { key: 'name', label: 'Name', sortable: true },
@@ -67,10 +67,10 @@ export function CiList() {
   ];
 
   return (
-    <Stack>
+    <Stack className="fade-in">
       <Group justify="space-between">
-        <Title order={2}>Configuration Items</Title>
-        <Button leftSection={<IconPlus size={16} />} onClick={() => navigate('/cmdb/cis/new')}>
+        <Title order={2} className="page-title">Configuration Items</Title>
+        <Button leftSection={<IconPlus size={16} />} onClick={() => navigate('/cmdb/cis/new')} className="gradient-btn">
           New CI
         </Button>
       </Group>

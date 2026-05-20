@@ -32,7 +32,7 @@ export async function seed(knex: Knex): Promise<void> {
       url: 'https://api.github.com',
       auth_type: 'bearer',
       auth_config: JSON.stringify({}),
-      events: JSON.stringify(['record.created', 'record.state_changed']),
+      events: '{record.created,record.state_changed}',
       active: true,
       status: 'connected',
       status_message: 'Connected via OAuth2',
@@ -51,7 +51,7 @@ export async function seed(knex: Knex): Promise<void> {
       url: 'https://acme-corp.atlassian.net',
       auth_type: 'bearer',
       auth_config: JSON.stringify({}),
-      events: JSON.stringify(['record.created', 'record.updated']),
+      events: '{record.created,record.updated}',
       active: true,
       status: 'connected',
       status_message: 'Connected via Atlassian OAuth2',
@@ -70,7 +70,7 @@ export async function seed(knex: Knex): Promise<void> {
       url: 'https://api.pagerduty.com',
       auth_type: 'bearer',
       auth_config: JSON.stringify({ token: 'pd_demo_api_key_placeholder' }),
-      events: JSON.stringify(['record.created', 'record.state_changed']),
+      events: '{record.created,record.state_changed}',
       active: true,
       status: 'connected',
       status_message: 'API key verified',
@@ -89,7 +89,7 @@ export async function seed(knex: Knex): Promise<void> {
       url: 'https://outlook.office.com/webhook/demo-guid',
       auth_type: 'none',
       auth_config: JSON.stringify({}),
-      events: JSON.stringify(['record.created', 'record.state_changed']),
+      events: '{record.created,record.state_changed}',
       active: true,
       status: 'connected',
       status_message: 'Webhook URL configured',
@@ -108,7 +108,7 @@ export async function seed(knex: Knex): Promise<void> {
       url: 'https://api.datadoghq.com',
       auth_type: 'api_key',
       auth_config: JSON.stringify({ key: 'dd_demo_api_key', headerName: 'DD-API-KEY' }),
-      events: JSON.stringify(['record.created']),
+      events: '{record.created}',
       active: true,
       status: 'connected',
       status_message: 'API key + App key verified',
@@ -127,7 +127,7 @@ export async function seed(knex: Knex): Promise<void> {
       url: 'https://grafana.acme-corp.internal',
       auth_type: 'bearer',
       auth_config: JSON.stringify({ token: 'glsa_demo_grafana_token' }),
-      events: JSON.stringify(['record.created']),
+      events: '{record.created}',
       active: true,
       status: 'connected',
       status_message: 'Bearer token verified',
@@ -287,68 +287,79 @@ export async function seed(knex: Knex): Promise<void> {
   }
 
   // ── Integration Logs (sample delivery logs) ────────
+  // Columns: event (string), status (success/error), request_body (jsonb)
   const logEntries: any[] = [];
 
   if (inc1) {
     logEntries.push({
       integration_id: githubId,
-      event_type: 'record.created',
-      payload: JSON.stringify({ table: 'incidents', record_id: inc1.id, number: 'INC1001' }),
-      response_status: 201,
-      response_body: JSON.stringify({ id: 142, html_url: 'https://github.com/acme-corp/platform-api/issues/142' }),
-      success: true,
+      event: 'record.created',
+      status: 'success',
+      request_body: JSON.stringify({ table: 'incidents', record_id: inc1.id, number: 'INC1001' }),
     });
     logEntries.push({
       integration_id: datadogId,
-      event_type: 'integration.inbound',
-      payload: JSON.stringify({ monitor_id: 7891234, alert_type: 'error', title: 'Email Service Health Check Failed' }),
-      response_status: null,
-      response_body: JSON.stringify({ action: 'auto_created_incident', incident_number: 'INC1001' }),
-      success: true,
+      event: 'integration.inbound',
+      status: 'success',
+      request_body: JSON.stringify({ monitor_id: 7891234, alert_type: 'error', title: 'Email Service Health Check Failed' }),
     });
   }
 
   if (chg1) {
     logEntries.push({
       integration_id: jiraId,
-      event_type: 'record.created',
-      payload: JSON.stringify({ table: 'changes', record_id: chg1.id, number: 'CHG1001' }),
-      response_status: 201,
-      response_body: JSON.stringify({ id: '10542', key: 'ITP-542', self: 'https://acme-corp.atlassian.net/rest/api/3/issue/10542' }),
-      success: true,
+      event: 'record.created',
+      status: 'success',
+      request_body: JSON.stringify({ table: 'changes', record_id: chg1.id, number: 'CHG1001' }),
     });
   }
 
   if (inc2) {
     logEntries.push({
       integration_id: githubId,
-      event_type: 'integration.inbound',
-      payload: JSON.stringify({ action: 'closed', pull_request: { number: 287, merged: true, title: 'Fix VPN MTU handling' } }),
-      response_status: null,
-      response_body: JSON.stringify({ action: 'link_updated', status: 'merged' }),
-      success: true,
+      event: 'integration.inbound',
+      status: 'success',
+      request_body: JSON.stringify({ action: 'closed', pull_request: { number: 287, merged: true, title: 'Fix VPN MTU handling' } }),
     });
   }
 
   logEntries.push({
     integration_id: teamsId,
-    event_type: 'record.state_changed',
-    payload: JSON.stringify({ table: 'incidents', number: 'INC1001', old_state: 'new', new_state: 'in_progress' }),
-    response_status: 200,
-    response_body: JSON.stringify({ ok: true }),
-    success: true,
+    event: 'record.state_changed',
+    status: 'success',
+    request_body: JSON.stringify({ table: 'incidents', number: 'INC1001', old_state: 'new', new_state: 'in_progress' }),
   });
 
   logEntries.push({
     integration_id: pagerdId,
-    event_type: 'integration.inbound',
-    payload: JSON.stringify({ event: { event_type: 'incident.triggered', data: { id: 'P_INC_00891', title: 'High CPU alert' } } }),
-    response_status: null,
-    response_body: JSON.stringify({ action: 'auto_created_incident' }),
-    success: true,
+    event: 'integration.inbound',
+    status: 'success',
+    request_body: JSON.stringify({ event: { event_type: 'incident.triggered', data: { id: 'P_INC_00891', title: 'High CPU alert' } } }),
   });
 
   if (logEntries.length > 0) {
     await knex('integration_logs').insert(logEntries);
+  }
+
+  // ── Chatbot platform settings ──────────────────────
+  const hasSettings = await knex.schema.hasTable('sys_settings');
+  if (hasSettings) {
+    const chatbotKeys = [
+      { key: 'SLACK_BOT_TOKEN', value: '', description: 'Slack Bot OAuth token for chatbot integration' },
+      { key: 'SLACK_SIGNING_SECRET', value: '', description: 'Slack signing secret for webhook verification' },
+      { key: 'TEAMS_APP_ID', value: '', description: 'Microsoft Teams app/bot ID' },
+      { key: 'TEAMS_APP_PASSWORD', value: '', description: 'Microsoft Teams app password (client secret)' },
+      { key: 'WHATSAPP_VERIFY_TOKEN', value: '', description: 'WhatsApp webhook verification token' },
+      { key: 'DISCORD_BOT_TOKEN', value: '', description: 'Discord bot token' },
+      { key: 'DISCORD_APPLICATION_ID', value: '', description: 'Discord application ID' },
+      { key: 'DISCORD_PUBLIC_KEY', value: '', description: 'Discord public key for interaction verification' },
+    ];
+
+    for (const setting of chatbotKeys) {
+      const exists = await knex('sys_settings').where('key', setting.key).first();
+      if (!exists) {
+        await knex('sys_settings').insert(setting);
+      }
+    }
   }
 }

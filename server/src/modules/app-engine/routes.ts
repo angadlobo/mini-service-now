@@ -26,6 +26,7 @@ router.post('/tables/:id/sync-schema', (req, res, next) => appEngineController.s
 
 // Pages
 router.get('/pages', (req, res, next) => appEngineController.listPages(req, res, next));
+router.get('/pages/:id', (req, res, next) => appEngineController.getPage(req, res, next));
 router.post('/pages', (req, res, next) => appEngineController.createPage(req, res, next));
 router.put('/pages/:id', (req, res, next) => appEngineController.updatePage(req, res, next));
 router.delete('/pages/:id', (req, res, next) => appEngineController.deletePage(req, res, next));

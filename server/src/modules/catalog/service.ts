@@ -43,7 +43,8 @@ export class CatalogService {
     const item = await db('sc_catalog_items').where('id', catalogItemId).first();
     if (!item) throw new AppError(404, 'Catalog item not found');
 
-    const [seqResult] = await db.raw("SELECT nextval('request_number_seq') as seq");
+    const seqRaw = await db.raw("SELECT nextval('request_number_seq') as seq");
+    const seqResult = seqRaw.rows?.[0] || seqRaw[0];
     const number = `REQ${seqResult.seq}`;
 
     const [request] = await db('sc_requests')

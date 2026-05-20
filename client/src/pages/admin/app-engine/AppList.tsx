@@ -93,8 +93,8 @@ export function AppList() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Custom Apps</Title>
-        <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>New App</Button>
+        <Title order={2} className="page-title">Custom Apps</Title>
+        <Button className="gradient-btn" leftSection={<IconPlus size={16} />} onClick={openCreate}>New App</Button>
       </Group>
 
       {apps.length === 0 ? (
@@ -105,6 +105,7 @@ export function AppList() {
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }}>
           {apps.map((app) => (
             <Paper
+              className="hover-lift glass-panel"
               key={app.id}
               p="md"
               withBorder
@@ -163,7 +164,7 @@ export function AppList() {
           <Switch label="Active" checked={form.active} onChange={(e) => set('active', e.currentTarget.checked)} />
           <Group justify="flex-end">
             <Button variant="subtle" onClick={() => setOpened(false)}>Cancel</Button>
-            <Button onClick={() => createMutation.mutate()} loading={createMutation.isPending} disabled={!form.name}>
+            <Button className="gradient-btn" onClick={() => createMutation.mutate()} loading={createMutation.isPending} disabled={!form.name}>
               Create
             </Button>
           </Group>

@@ -231,9 +231,9 @@ export function FormDesigner() {
 
   return (
     <Stack>
-      <Title order={2}>{isEdit ? 'Edit Form' : 'New Form'}</Title>
+      <Title order={2} className="page-title">{isEdit ? 'Edit Form' : 'New Form'}</Title>
 
-      <Paper p="md" withBorder>
+      <Paper p="md" withBorder className="glass-panel">
         <Stack gap="sm">
           <TextInput label="Form Name" required value={name} onChange={(e) => setName(e.currentTarget.value)} />
           <Textarea label="Description" value={description} onChange={(e) => setDescription(e.currentTarget.value)} />
@@ -248,7 +248,7 @@ export function FormDesigner() {
 
       <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
-          <Table striped withTableBorder>
+          <Table striped withTableBorder className="glass-table">
             <Table.Thead>
               <Table.Tr>
                 <Table.Th w={40}></Table.Th>
@@ -277,7 +277,7 @@ export function FormDesigner() {
 
       <Group justify="flex-end">
         <Button variant="subtle" onClick={() => navigate('/forms')}>Cancel</Button>
-        <Button onClick={() => saveMutation.mutate()} loading={saveMutation.isPending}>Save Form</Button>
+        <Button className="gradient-btn" onClick={() => saveMutation.mutate()} loading={saveMutation.isPending}>Save Form</Button>
       </Group>
 
       <Modal opened={fieldModal} onClose={() => setFieldModal(false)} title={editIdx !== null ? 'Edit Field' : 'Add Field'} size="lg">

@@ -26,6 +26,7 @@ import { WorkflowMonitoring } from './pages/workflows/WorkflowMonitoring';
 import { IntegrationList } from './pages/admin/IntegrationList';
 import { IntegrationProviders } from './pages/admin/IntegrationProviders';
 import { ReportList } from './pages/reports/ReportList';
+import { ReportDesigner } from './pages/reports/ReportDesigner';
 import { FormTemplateList } from './pages/forms/FormTemplateList';
 import { FormDesigner } from './pages/forms/FormDesigner';
 import { FormRenderer } from './pages/forms/FormRenderer';
@@ -46,8 +47,13 @@ import { ChangeDashboard } from './pages/changes/ChangeDashboard';
 import { ChangeTemplates } from './pages/changes/ChangeTemplates';
 import { CABDashboard } from './pages/changes/CABDashboard';
 import { MaintenanceWindows } from './pages/changes/MaintenanceWindows';
+import { ReleaseList } from './pages/releases/ReleaseList';
+import { ReleaseForm } from './pages/releases/ReleaseForm';
+import { ReleaseCalendar } from './pages/releases/ReleaseCalendar';
+import { ReleaseDashboard } from './pages/releases/ReleaseDashboard';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { ChatBot } from './components/common/ChatBot';
+import { CommandPalette } from './components/common/CommandPalette';
 
 export default function App() {
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
@@ -64,6 +70,7 @@ export default function App() {
 
   return (
     <AppShell>
+      <CommandPalette />
       <ChatBot />
       <Routes>
         <Route path="/" element={<Dashboard />} />
@@ -82,6 +89,13 @@ export default function App() {
         <Route path="/changes/cab" element={<ProtectedRoute roles={['admin', 'itil']}><CABDashboard /></ProtectedRoute>} />
         <Route path="/changes/maintenance-windows" element={<ProtectedRoute roles={['admin']}><MaintenanceWindows /></ProtectedRoute>} />
         <Route path="/changes/:id" element={<ChangeForm />} />
+
+        {/* Releases */}
+        <Route path="/releases" element={<ReleaseList />} />
+        <Route path="/releases/new" element={<ProtectedRoute roles={['admin', 'itil']}><ReleaseForm /></ProtectedRoute>} />
+        <Route path="/releases/dashboard" element={<ReleaseDashboard />} />
+        <Route path="/releases/calendar" element={<ReleaseCalendar />} />
+        <Route path="/releases/:id" element={<ReleaseForm />} />
 
         {/* Problems */}
         <Route path="/problems" element={<ProblemList />} />
@@ -106,6 +120,8 @@ export default function App() {
 
         {/* Reports */}
         <Route path="/reports" element={<ReportList />} />
+        <Route path="/reports/new" element={<ProtectedRoute roles={['admin', 'itil']}><ReportDesigner /></ProtectedRoute>} />
+        <Route path="/reports/:id/edit" element={<ProtectedRoute roles={['admin', 'itil']}><ReportDesigner /></ProtectedRoute>} />
 
         {/* Forms */}
         <Route path="/forms" element={<FormTemplateList />} />

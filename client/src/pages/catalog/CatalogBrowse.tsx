@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Stack, Title, SimpleGrid, Card, Text, Group, Badge, Button, SegmentedControl, TextInput, Image, ThemeIcon, Box, LoadingOverlay } from '@mantine/core';
+import { Stack, Title, SimpleGrid, Card, Text, Group, Badge, Button, SegmentedControl, TextInput, Image, ThemeIcon, Box, LoadingOverlay, Paper } from '@mantine/core';
 import { IconSearch, IconShoppingCart } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { catalogApi } from '../../api/catalog.api';
@@ -35,33 +35,36 @@ export function CatalogBrowse() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Service Catalog</Title>
-        <Button variant="light" leftSection={<IconShoppingCart size={16} />} onClick={() => navigate('/catalog/requests')}>
+        <Title order={2} className="page-title">Service Catalog</Title>
+        <Button leftSection={<IconShoppingCart size={16} />} onClick={() => navigate('/catalog/requests')} className="gradient-btn">
           My Requests
         </Button>
       </Group>
 
-      <Group>
-        <TextInput
-          placeholder="Search items..."
-          leftSection={<IconSearch size={16} />}
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          w={300}
-        />
-        <SegmentedControl data={categoryData} value={selectedCategory} onChange={setSelectedCategory} />
-      </Group>
+      <Paper p="sm" radius="lg" style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+        <Group>
+          <TextInput
+            placeholder="Search items..."
+            leftSection={<IconSearch size={16} />}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            w={300}
+            radius="md"
+          />
+          <SegmentedControl data={categoryData} value={selectedCategory} onChange={setSelectedCategory} radius="md" />
+        </Group>
+      </Paper>
 
       <Box pos="relative" mih={200}>
         <LoadingOverlay visible={isLoading} />
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }}>
           {filteredItems.map((item: any) => (
-            <Card key={item.id} shadow="sm" padding="lg" radius="md" withBorder
-              style={{ cursor: 'pointer' }}
+            <Card key={item.id} padding="lg" radius="lg" className="hover-lift"
+              style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)', cursor: 'pointer', transition: 'all 0.2s ease' }}
               onClick={() => navigate(`/catalog/items/${item.id}`)}
             >
               <Group mb="xs">
-                <ThemeIcon variant="light" size="lg" radius="md">
+                <ThemeIcon variant="light" size="lg" radius="md" color="violet">
                   <IconShoppingCart size={20} />
                 </ThemeIcon>
                 <div style={{ flex: 1 }}>
@@ -90,7 +93,10 @@ export function CatalogBrowse() {
           ))}
         </SimpleGrid>
         {filteredItems.length === 0 && !isLoading && (
-          <Text c="dimmed" ta="center" py="xl">No items found</Text>
+          <Paper p="xl" radius="lg" style={{ background: 'rgba(255,255,255,0.45)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.3)' }}>
+            <Text c="dimmed" ta="center" size="lg" fw={500}>No items found</Text>
+            <Text c="dimmed" ta="center" size="sm" mt="xs">Try adjusting your search or category filter</Text>
+          </Paper>
         )}
       </Box>
     </Stack>

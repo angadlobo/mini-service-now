@@ -64,6 +64,14 @@ export class AiController {
     } catch (err) { next(err); }
   }
 
+  // Chat
+  async chat(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await aiService.chat(req.body.message, req.body.context || '', (req as any).user.id);
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
   // Feedback
   async feedback(req: Request, res: Response, next: NextFunction) {
     try {

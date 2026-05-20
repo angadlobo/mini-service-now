@@ -34,6 +34,8 @@ export const appEngineApi = {
   // Pages
   listPages: (appId: string) =>
     api.get('/app-engine/pages', { params: { app_id: appId } }).then((r) => r.data),
+  getPage: (id: string) =>
+    api.get(`/app-engine/pages/${id}`).then((r) => r.data),
   createPage: (data: Record<string, unknown>) =>
     api.post('/app-engine/pages', data).then((r) => r.data),
   updatePage: (id: string, data: Record<string, unknown>) =>

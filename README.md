@@ -12,6 +12,7 @@ Mini ServiceNow is an open-source ITSM platform that replicates the core functio
 
 - **Incident Management** -- Track and resolve IT issues with priority matrices, SLA enforcement, and state machines
 - **Change Management** -- Plan, approve, and implement changes with risk assessment and approval workflows
+- **Release Management** -- Group changes into coordinated deployment packages with scheduling, risk scoring, rollback tracking, and a release calendar
 - **Problem Management** -- Identify root causes across related incidents with investigation workflows
 - **CMDB / Asset Management** -- Track configuration items, relationships, and impact analysis
 - **Service Catalog** -- Self-service portal with dynamic request forms and approval routing
@@ -156,6 +157,20 @@ Open [http://localhost:3000](http://localhost:3000)
 - Backout plans and justification fields
 - AI assist: risk assessment
 
+### Release Management
+- Full CRUD with auto-generated REL numbers (REL000001, REL000002, ...)
+- Types: Major, Minor, Patch, Hotfix
+- Risk levels: High, Moderate, Low with computed risk scores (risk x impact matrix adjusted by type and change count)
+- State machine: Planning -> Review -> Approved -> In Progress -> Completed / Rolled Back
+- Deployment actions: start deployment, complete deployment, rollback with stakeholder notifications
+- Link multiple change requests to a release with sequence ordering and per-change deployment status
+- Affected CI tracking and stakeholder management with roles (stakeholder, approver, tester, developer)
+- Version tracking: deployed version, previous version, build number
+- Release calendar with month grid view color-coded by release type
+- Release dashboard with KPI stat cards (total, success rate, rollback count, avg deployment hours), state/type charts, and monthly trend
+- Implementation plan, test plan, rollback plan, and communication plan fields
+- Journal/comments, attachments, audit trail, and approval panels
+
 ### Problem Management
 - Full CRUD with auto-generated PRB numbers
 - State machine: New -> Investigation -> Root Cause Found -> Fix in Progress -> Resolved -> Closed
@@ -272,6 +287,20 @@ Open [http://localhost:3000](http://localhost:3000)
 | POST/DELETE | `/api/problems/:id/incidents/:iid` | Link/unlink incident |
 | POST/DELETE | `/api/problems/:id/changes/:cid` | Link/unlink change |
 
+### Releases
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST | `/api/releases` | List/create releases |
+| GET/PUT | `/api/releases/:id` | Get/update release |
+| GET | `/api/releases/metrics` | Release metrics & KPIs |
+| GET | `/api/releases/calendar` | Release calendar data |
+| GET/POST/DELETE | `/api/releases/:id/changes` | Linked changes |
+| POST/DELETE | `/api/releases/:id/cis` | Affected CIs |
+| POST/DELETE | `/api/releases/:id/stakeholders` | Release stakeholders |
+| POST | `/api/releases/:id/start-deployment` | Start deployment |
+| POST | `/api/releases/:id/complete-deployment` | Complete deployment |
+| POST | `/api/releases/:id/rollback` | Rollback release |
+
 ### CMDB
 | Method | Endpoint | Description |
 |---|---|---|
@@ -362,6 +391,7 @@ mini-service-now/
 │   │   │   ├── users/              # User & group management
 │   │   │   ├── incidents/          # Incident CRUD + state machine + SLA
 │   │   │   ├── changes/            # Change CRUD + state machine + approvals
+│   │   │   ├── releases/           # Release CRUD + deployment actions + calendar
 │   │   │   ├── problems/           # Problem CRUD + linked incidents/changes
 │   │   │   ├── cmdb/               # CI types, CIs, relationships, impact analysis
 │   │   │   ├── catalog/            # Categories, items, requests
@@ -383,7 +413,7 @@ mini-service-now/
 │   │   │   ├── notification-prefs/ # Channel preferences per user
 │   │   │   └── dashboard/          # Stats & my-work
 │   │   ├── db/
-│   │   │   ├── migrations/         # 23 Knex migrations
+│   │   │   ├── migrations/         # 26 Knex migrations
 │   │   │   └── seeds/              # Demo data
 │   │   └── types/
 │   └── Dockerfile / Dockerfile.dev
@@ -403,6 +433,7 @@ mini-service-now/
     │   │   ├── Login, Register, Dashboard
     │   │   ├── incidents/          # IncidentList, IncidentForm
     │   │   ├── changes/            # ChangeList, ChangeForm
+    │   │   ├── releases/           # ReleaseList, ReleaseForm, ReleaseCalendar, ReleaseDashboard
     │   │   ├── problems/           # ProblemList, ProblemForm
     │   │   ├── cmdb/               # CiList, CiForm
     │   │   ├── catalog/            # CatalogBrowse, CatalogItemDetail, CatalogRequestList

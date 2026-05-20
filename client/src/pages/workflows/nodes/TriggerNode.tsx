@@ -6,6 +6,10 @@ const TRIGGER_LABELS: Record<string, string> = {
   'record.created': 'Record Created',
   'record.updated': 'Record Updated',
   'record.state_changed': 'State Changed',
+  'approval.decided': 'Approval Decided',
+  'sla.breached': 'SLA Breached',
+  'webhook.received': 'Webhook Received',
+  'scheduled': 'Scheduled',
 };
 
 export interface TriggerNodeData {

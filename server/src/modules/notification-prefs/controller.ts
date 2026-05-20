@@ -33,6 +33,13 @@ export class NotificationPrefsController {
       res.json({ message: 'Preference updated' });
     } catch (err) { next(err); }
   }
+
+  async testChannel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await notificationPrefsService.testChannel(req.params.id);
+      res.json(result);
+    } catch (err) { next(err); }
+  }
 }
 
 export const notificationPrefsController = new NotificationPrefsController();

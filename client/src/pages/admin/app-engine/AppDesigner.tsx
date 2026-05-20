@@ -190,7 +190,7 @@ export function AppDesigner() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>{app?.name || 'App Designer'}</Title>
+        <Title order={2} className="page-title">{app?.name || 'App Designer'}</Title>
         <Button variant="subtle" onClick={() => navigate('/admin/app-engine')}>Back to Apps</Button>
       </Group>
 
@@ -204,7 +204,7 @@ export function AppDesigner() {
 
         {/* Overview Tab */}
         <Tabs.Panel value="overview" pt="md">
-          <Paper p="md" withBorder>
+          <Paper p="md" withBorder className="glass-panel">
             <Stack gap="sm">
               <TextInput label="Name" required value={name} onChange={(e) => setName(e.currentTarget.value)} />
               <TextInput label="Slug" value={slug} onChange={(e) => setSlug(e.currentTarget.value)} />
@@ -213,7 +213,7 @@ export function AppDesigner() {
               <Select label="Color" data={COLOR_OPTIONS} value={color} onChange={(v) => setColor(v || 'blue')} />
               <Switch label="Active" checked={active} onChange={(e) => setActive(e.currentTarget.checked)} />
               <Group justify="flex-end">
-                <Button onClick={() => updateAppMutation.mutate()} loading={updateAppMutation.isPending}>Save</Button>
+                <Button className="gradient-btn" onClick={() => updateAppMutation.mutate()} loading={updateAppMutation.isPending}>Save</Button>
               </Group>
             </Stack>
           </Paper>
@@ -226,7 +226,7 @@ export function AppDesigner() {
               <Title order={4}>Tables ({tables.length})</Title>
               <Button size="sm" leftSection={<IconPlus size={16} />} onClick={openAddTable}>Add Table</Button>
             </Group>
-            <Table striped highlightOnHover withTableBorder>
+            <Table className="glass-table" striped highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Name</Table.Th>
@@ -270,7 +270,7 @@ export function AppDesigner() {
               <Title order={4}>Pages ({pages.length})</Title>
               <Button size="sm" leftSection={<IconPlus size={16} />} onClick={openAddPage}>Add Page</Button>
             </Group>
-            <Table striped highlightOnHover withTableBorder>
+            <Table className="glass-table" striped highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Title</Table.Th>
@@ -326,7 +326,7 @@ export function AppDesigner() {
                 New Dashboard
               </Button>
             </Group>
-            <Table striped highlightOnHover withTableBorder>
+            <Table className="glass-table" striped highlightOnHover withTableBorder>
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Name</Table.Th>
@@ -403,7 +403,7 @@ export function AppDesigner() {
           />
           <Group justify="flex-end">
             <Button variant="subtle" onClick={() => setPageModal(false)}>Cancel</Button>
-            <Button onClick={() => savePageMutation.mutate()} loading={savePageMutation.isPending} disabled={!pageForm.title}>
+            <Button className="gradient-btn" onClick={() => savePageMutation.mutate()} loading={savePageMutation.isPending} disabled={!pageForm.title}>
               Save
             </Button>
           </Group>

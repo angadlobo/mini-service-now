@@ -56,7 +56,8 @@ export class CmdbService {
   }
 
   async createCi(data: Record<string, unknown>, userId: string) {
-    const [seqResult] = await db.raw("SELECT nextval('ci_number_seq') as seq");
+    const seqRaw = await db.raw("SELECT nextval('ci_number_seq') as seq");
+    const seqResult = seqRaw.rows?.[0] || seqRaw[0];
     const number = `CI${seqResult.seq}`;
 
     const [ci] = await db('cis')

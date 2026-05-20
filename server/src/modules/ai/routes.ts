@@ -22,6 +22,7 @@ router.delete('/prompts/:id', authenticate, requireRole('admin'), (req, res, nex
 
 // Generate (any authenticated user)
 router.post('/generate', authenticate, (req, res, next) => aiController.generate(req, res, next));
+router.post('/chat', authenticate, (req, res, next) => aiController.chat(req, res, next));
 router.post('/feedback', authenticate, (req, res, next) => aiController.feedback(req, res, next));
 
 // Usage (admin)

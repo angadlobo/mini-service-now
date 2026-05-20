@@ -463,14 +463,29 @@ export interface IntegrationLog {
 }
 
 // ── Reports ─────────────────────────────────────────────
+export interface ReportConfig {
+  group_by?: string;
+  aggregate_function?: 'count' | 'sum' | 'avg' | 'min' | 'max';
+  aggregate_column?: string;
+  sort_by?: string;
+  sort_direction?: 'asc' | 'desc';
+  row_limit?: number;
+}
+
+export interface ReportFilter {
+  operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'contains' | 'starts_with' | 'ends_with' | 'is_null' | 'is_not_null' | 'in';
+  value: unknown;
+}
+
 export interface Report {
   id: string;
   name: string;
   description: string;
   table_name: string;
-  filters: Record<string, unknown>;
+  filters: Record<string, ReportFilter | unknown>;
   columns: string[];
   chart_type: string;
+  config: ReportConfig;
   is_public: boolean;
   created_by: string;
   created_at: string;
@@ -687,7 +702,7 @@ export interface AppEngineDashboard {
 
 export interface WidgetConfig {
   id: string;
-  type: 'stat_card' | 'bar_chart' | 'pie_chart' | 'line_chart' | 'table' | 'list';
+  type: 'stat_card' | 'bar_chart' | 'pie_chart' | 'line_chart' | 'table' | 'list' | 'report_chart';
   title: string;
   table_name: string;
   aggregate?: 'count' | 'sum' | 'avg';
@@ -700,4 +715,43 @@ export interface WidgetConfig {
   row_order: number;
   color?: string;
   icon?: string;
+  report_id?: string;
+}
+
+// ── Releases ────────────────────────────────────────────
+export type ReleaseState = 'planning' | 'review' | 'approved' | 'in_progress' | 'completed' | 'rolled_back' | 'cancelled';
+export type ReleaseType = 'major' | 'minor' | 'patch' | 'hotfix';
+
+export interface Release {
+  id: string;
+  number: string;
+  short_description: string;
+  description: string;
+  state: ReleaseState;
+  release_type: ReleaseType;
+  priority: Priority;
+  risk: RiskLevel;
+  impact: string;
+  risk_score: number;
+  scheduled_start: string | null;
+  scheduled_end: string | null;
+  actual_start: string | null;
+  actual_end: string | null;
+  implementation_plan: string | null;
+  test_plan: string | null;
+  rollback_plan: string | null;
+  communication_plan: string | null;
+  deployed_version: string | null;
+  previous_version: string | null;
+  build_number: string | null;
+  release_manager_id: string | null;
+  assignment_group_id: string | null;
+  assigned_to: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  release_manager_name?: string;
+  assigned_to_name?: string;
+  assignment_group_name?: string;
+  created_by_name?: string;
 }

@@ -35,7 +35,7 @@ export function IncidentList() {
   };
 
   const columns = [
-    { key: 'number', label: 'Number', sortable: true, width: 110, render: (r: any) => <span style={{ fontWeight: 600, color: '#228be6' }}>{r.number}</span> },
+    { key: 'number', label: 'Number', sortable: true, width: 110, render: (r: any) => <span style={{ fontWeight: 600, color: 'var(--mantine-primary-color-filled)' }}>{r.number}</span> },
     { key: 'short_description', label: 'Short Description', sortable: true },
     { key: 'state', label: 'State', sortable: true, width: 120, render: (r: any) => <StateIndicator state={r.state} /> },
     { key: 'priority', label: 'Priority', sortable: true, width: 130, render: (r: any) => <PriorityBadge priority={r.priority} /> },
@@ -45,10 +45,10 @@ export function IncidentList() {
   ];
 
   return (
-    <Stack>
+    <Stack className="fade-in">
       <Group justify="space-between">
-        <Title order={2}>Incidents</Title>
-        <Button leftSection={<IconPlus size={16} />} onClick={() => navigate('/incidents/new')}>
+        <Title order={2} className="page-title">Incidents</Title>
+        <Button leftSection={<IconPlus size={16} />} onClick={() => navigate('/incidents/new')} className="gradient-btn">
           New Incident
         </Button>
       </Group>

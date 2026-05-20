@@ -103,12 +103,12 @@ export function FormRenderer() {
     <Container size="sm">
       <Title order={2} mb="md">{template.name}</Title>
       {template.description && <Text c="dimmed" mb="lg">{template.description}</Text>}
-      <Paper p="xl" withBorder>
+      <Paper p="xl" withBorder className="glass-panel">
         <Stack gap="md">
           {fields.map(renderField)}
           <Group justify="flex-end" mt="lg">
             <Button variant="default" onClick={() => navigate('/forms')}>Cancel</Button>
-            <Button onClick={handleSubmit} loading={submitMutation.isPending}>Submit</Button>
+            <Button className="gradient-btn" onClick={handleSubmit} loading={submitMutation.isPending}>Submit</Button>
           </Group>
         </Stack>
       </Paper>

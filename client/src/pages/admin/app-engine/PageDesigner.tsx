@@ -45,7 +45,7 @@ export function PageDesigner() {
 
   const { data: page, isLoading } = useQuery({
     queryKey: ['app-engine-page', pageId],
-    queryFn: () => appEngineApi.listPages('').then((pages: any[]) => pages.find((p: any) => p.id === pageId)),
+    queryFn: () => appEngineApi.getPage(pageId!),
     enabled: !!pageId,
   });
 
@@ -103,11 +103,11 @@ export function PageDesigner() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Page Designer</Title>
+        <Title order={2} className="page-title">Page Designer</Title>
         <Button variant="subtle" onClick={() => navigate(-1)}>Back</Button>
       </Group>
 
-      <Paper p="md" withBorder>
+      <Paper p="md" withBorder className="glass-panel">
         <Stack gap="sm">
           <TextInput label="Title" required value={title} onChange={(e) => setTitle(e.currentTarget.value)} />
           <Select label="Type" required data={PAGE_TYPES} value={type} onChange={(v) => setType(v || 'list')} />
@@ -124,7 +124,7 @@ export function PageDesigner() {
 
       {/* Config editor - varies by type */}
       {type === 'list' && (
-        <Paper p="md" withBorder>
+        <Paper p="md" withBorder className="glass-panel">
           <Stack gap="sm">
             <Title order={4}>List Configuration</Title>
             <MultiSelect
@@ -152,7 +152,7 @@ export function PageDesigner() {
       )}
 
       {type === 'form' && (
-        <Paper p="md" withBorder>
+        <Paper p="md" withBorder className="glass-panel">
           <Stack gap="sm">
             <Title order={4}>Form Configuration</Title>
             <MultiSelect
@@ -174,7 +174,7 @@ export function PageDesigner() {
       )}
 
       {type === 'dashboard' && (
-        <Paper p="md" withBorder>
+        <Paper p="md" withBorder className="glass-panel">
           <Stack gap="sm">
             <Title order={4}>Dashboard Configuration</Title>
             <Text c="dimmed" size="sm">Dashboard pages reference a dashboard by ID. Configure the dashboard in the Dashboards section.</Text>
@@ -184,7 +184,7 @@ export function PageDesigner() {
 
       <Group justify="flex-end">
         <Button variant="subtle" onClick={() => navigate(-1)}>Cancel</Button>
-        <Button onClick={() => saveMutation.mutate()} loading={saveMutation.isPending} disabled={!title}>
+        <Button className="gradient-btn" onClick={() => saveMutation.mutate()} loading={saveMutation.isPending} disabled={!title}>
           Save
         </Button>
       </Group>

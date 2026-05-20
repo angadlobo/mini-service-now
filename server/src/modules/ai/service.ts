@@ -82,6 +82,95 @@ export class AiService {
     return generateCompletion(promptId, context, userId);
   }
 
+  // Chat - simple single-turn chat using first active provider
+  async chat(message: string, context: string, userId: string) {
+    const provider = await db('ai_providers').where('active', true).first();
+    if (!provider) throw new AppError(400, 'No active AI provider configured. Please configure one in Admin > AI Providers.');
+
+    const { decryptApiKey: decrypt } = await import('../../core/ai-engine');
+    const apiKey = provider.api_key_encrypted ? decrypt(provider.api_key_encrypted) : '';
+
+    const adapters: Record<string, string> = { openai: 'openai', anthropic: 'anthropic', ollama: 'ollama', custom: 'custom' };
+    const adapterType = adapters[provider.provider_type];
+    if (!adapterType) throw new AppError(400, `Unknown provider type: ${provider.provider_type}`);
+
+    // Use ai-engine adapters directly
+    const { generateCompletion: _ , ...aiEngine } = await import('../../core/ai-engine');
+
+    const systemPrompt = `You are a helpful IT service management assistant for a ServiceNow-like platform. You help users with incidents, changes, problems, service catalog, knowledge base, workflows, and general IT questions.${context ? `\n\nUser is currently on: ${context}` : ''}`;
+
+    // Build adapter call based on provider type
+    const url = provider.provider_type === 'openai'
+      ? `${provider.base_url || 'https://api.openai.com/v1'}/chat/completions`
+      : provider.provider_type === 'anthropic'
+      ? `${provider.base_url || 'https://api.anthropic.com'}/v1/messages`
+      : provider.provider_type === 'ollama'
+      ? `${provider.base_url || 'http://localhost:11434'}/api/chat`
+      : provider.base_url || '';
+
+    let text = '';
+    let inputTokens = 0;
+    let outputTokens = 0;
+
+    if (provider.provider_type === 'openai') {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: provider.model,
+          messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: message }],
+          max_tokens: 1000,
+        }),
+      });
+      if (!res.ok) throw new AppError(500, `AI provider error: ${res.status}`);
+      const json = await res.json() as any;
+      text = json.choices?.[0]?.message?.content || '';
+      inputTokens = json.usage?.prompt_tokens || 0;
+      outputTokens = json.usage?.completion_tokens || 0;
+    } else if (provider.provider_type === 'anthropic') {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({
+          model: provider.model, max_tokens: 1000, system: systemPrompt,
+          messages: [{ role: 'user', content: message }],
+        }),
+      });
+      if (!res.ok) throw new AppError(500, `AI provider error: ${res.status}`);
+      const json = await res.json() as any;
+      text = json.content?.[0]?.text || '';
+      inputTokens = json.usage?.input_tokens || 0;
+      outputTokens = json.usage?.output_tokens || 0;
+    } else if (provider.provider_type === 'ollama') {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: provider.model, stream: false,
+          messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: message }],
+        }),
+      });
+      if (!res.ok) throw new AppError(500, `AI provider error: ${res.status}`);
+      const json = await res.json() as any;
+      text = json.message?.content || '';
+      inputTokens = json.prompt_eval_count || 0;
+      outputTokens = json.eval_count || 0;
+    } else {
+      throw new AppError(400, 'Chat not supported for custom provider type');
+    }
+
+    // Log usage
+    await db('ai_usage_log').insert({
+      provider_id: provider.id,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      response_text: text,
+      user_id: userId,
+    });
+
+    return { text, tokensUsed: inputTokens + outputTokens };
+  }
+
   // Feedback
   async submitFeedback(logId: string, feedback: string) {
     await db('ai_usage_log').where('id', logId).update({ feedback });

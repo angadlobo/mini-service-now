@@ -5,6 +5,7 @@ import { authenticate, requireRole } from '../../middleware/auth';
 const router = Router();
 
 router.get('/', authenticate, (req, res, next) => reportingController.list(req, res, next));
+router.get('/table-columns/:tableName', authenticate, (req, res, next) => reportingController.getTableColumns(req, res, next));
 router.get('/:id', authenticate, (req, res, next) => reportingController.getById(req, res, next));
 router.post('/', authenticate, requireRole('itil', 'admin'), (req, res, next) => reportingController.create(req, res, next));
 router.put('/:id', authenticate, requireRole('itil', 'admin'), (req, res, next) => reportingController.update(req, res, next));

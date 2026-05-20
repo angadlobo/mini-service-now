@@ -51,6 +51,9 @@ export const notificationApi = {
 export const dashboardApi = {
   getStats: () => api.get<DashboardStats>('/dashboard/stats').then(r => r.data),
   getMyWork: () => api.get<{ incidents: any[]; changes: any[]; problems: any[] }>('/dashboard/my-work').then(r => r.data),
+  getLayout: () => api.get('/dashboard/layout').then(r => r.data),
+  saveLayout: (layout: any[]) => api.put('/dashboard/layout', { layout }).then(r => r.data),
+  getWidgetData: (widget: any) => api.post('/dashboard/widget-data', { widget }).then(r => r.data),
 };
 
 export const usersApi = {
@@ -149,6 +152,7 @@ export const reportsApi = {
   delete: (id: string) => api.delete(`/reports/${id}`).then(r => r.data),
   run: (id: string) => api.get(`/reports/${id}/run`).then(r => r.data),
   exportCsv: (id: string) => api.get(`/reports/${id}/export`, { responseType: 'blob' }),
+  getTableColumns: (tableName: string) => api.get<{ name: string; type: string; nullable: boolean }[]>(`/reports/table-columns/${tableName}`).then(r => r.data),
 };
 
 // ── Forms ─────────────────────────────────────────────
