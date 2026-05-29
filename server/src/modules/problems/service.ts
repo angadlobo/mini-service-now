@@ -44,7 +44,7 @@ export class ProblemService {
   }
 
   async create(data: Record<string, unknown>, userId: string) {
-    const [seqResult] = await db.raw("SELECT nextval('problem_number_seq') as seq");
+    const seqResult = (await db.raw("SELECT nextval('problem_number_seq') as seq")).rows[0];
     const number = `PRB${seqResult.seq}`;
 
     const [problem] = await db('problems')

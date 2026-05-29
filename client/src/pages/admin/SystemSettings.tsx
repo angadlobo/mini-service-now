@@ -15,9 +15,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   email: 'Email',
   slack: 'Slack',
   ai: 'AI',
+  catalog: 'Service Catalog',
 };
 
-const CATEGORY_ORDER = ['general', 'auth', 'email', 'slack', 'ai'];
+const CATEGORY_ORDER = ['general', 'auth', 'email', 'slack', 'ai', 'catalog'];
 
 const COLOR_PALETTE = [
   { name: 'indigo', color: '#667eea', label: 'Indigo' },

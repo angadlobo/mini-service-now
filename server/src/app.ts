@@ -34,7 +34,23 @@ import notificationPrefsRoutes from './modules/notification-prefs/routes';
 import appEngineRoutes from './modules/app-engine/routes';
 import dynamicCrudRoutes from './modules/app-engine/dynamic-crud.routes';
 import releaseRoutes from './modules/releases/routes';
+import portalRoutes from './modules/portal/routes';
 import chatbotRoutes from './core/chatbot/routes';
+import assetRoutes from './modules/assets/routes';
+import contractRoutes from './modules/contracts/routes';
+import projectRoutes from './modules/projects/routes';
+import oncallRoutes from './modules/oncall/routes';
+import eventRoutes from './modules/events/routes';
+import surveyRoutes from './modules/surveys/routes';
+import serviceMappingRoutes from './modules/service-mapping/routes';
+import costManagementRoutes from './modules/cost-management/routes';
+import businessContinuityRoutes from './modules/business-continuity/routes';
+import demandRoutes from './modules/demand-management/routes';
+import capacityRoutes from './modules/capacity-planning/routes';
+import auditRoutes from './modules/audit/routes';
+import slaRoutes from './modules/sla/routes';
+import majorIncidentRoutes from './modules/major-incidents/routes';
+import emailProcessingRoutes from './modules/email-processing/routes';
 
 // Register modules
 import { registerIncidentModule } from './modules/incidents/module';
@@ -42,6 +58,14 @@ import { registerChangeModule } from './modules/changes/module';
 import { registerProblemModule } from './modules/problems/module';
 import { registerCmdbModule } from './modules/cmdb/module';
 import { registerReleaseModule } from './modules/releases/module';
+import { registerAssetModule } from './modules/assets/module';
+import { registerContractModule } from './modules/contracts/module';
+import { registerProjectModule } from './modules/projects/module';
+import { registerEventModule } from './modules/events/module';
+import { registerServiceMappingModule } from './modules/service-mapping/module';
+import { registerCostManagementModule } from './modules/cost-management/module';
+import { registerBusinessContinuityModule } from './modules/business-continuity/module';
+import { registerDemandManagementModule } from './modules/demand-management/module';
 import { appEngineService } from './modules/app-engine/service';
 import { registerAllProviders } from './integrations/providers/index';
 
@@ -50,6 +74,14 @@ registerChangeModule();
 registerProblemModule();
 registerCmdbModule();
 registerReleaseModule();
+registerAssetModule();
+registerContractModule();
+registerProjectModule();
+registerEventModule();
+registerServiceMappingModule();
+registerCostManagementModule();
+registerBusinessContinuityModule();
+registerDemandManagementModule();
 
 // Register integration providers
 registerAllProviders();
@@ -114,6 +146,22 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/notification-prefs', notificationPrefsRoutes);
 app.use('/api/app-engine', appEngineRoutes);
 app.use('/api/releases', releaseRoutes);
+app.use('/api/portal', portalRoutes);
+app.use('/api/assets', assetRoutes);
+app.use('/api/contracts', contractRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/oncall', oncallRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/surveys', surveyRoutes);
+app.use('/api/service-mapping', serviceMappingRoutes);
+app.use('/api/cost-management', costManagementRoutes);
+app.use('/api/business-continuity', businessContinuityRoutes);
+app.use('/api/demands', demandRoutes);
+app.use('/api/capacity', capacityRoutes);
+app.use('/api/audit', auditRoutes);
+app.use('/api/sla', slaRoutes);
+app.use('/api/major-incidents', majorIncidentRoutes);
+app.use('/api/email', emailProcessingRoutes);
 app.use('/api/x', dynamicCrudRoutes);
 
 // ── Journal (comments/work notes) ────────────────────

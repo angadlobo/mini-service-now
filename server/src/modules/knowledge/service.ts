@@ -56,7 +56,7 @@ export class KnowledgeService {
   }
 
   async create(data: Record<string, unknown>, userId: string) {
-    const [seqResult] = await db.raw("SELECT nextval('kb_number_seq') as seq");
+    const seqResult = (await db.raw("SELECT nextval('kb_number_seq') as seq")).rows[0];
     const number = `KB${seqResult.seq}`;
 
     const [article] = await db('kb_articles')

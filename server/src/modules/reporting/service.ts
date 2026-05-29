@@ -146,7 +146,7 @@ export class ReportingService {
             const val = filterObj.value;
             switch (op) {
               case 'eq': query = query.where(key, '=', val); break;
-              case 'neq': query = query.where(key, '!=', val); break;
+              case 'neq': query = query.where(key, '<>', val as any); break;
               case 'gt': query = query.where(key, '>', val); break;
               case 'gte': query = query.where(key, '>=', val); break;
               case 'lt': query = query.where(key, '<', val); break;

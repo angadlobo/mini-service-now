@@ -755,3 +755,515 @@ export interface Release {
   assignment_group_name?: string;
   created_by_name?: string;
 }
+
+// ── Assets ─────────────────────────────────────────────
+export type AssetStatus = 'on_order' | 'in_stock' | 'in_use' | 'in_repair' | 'retired' | 'disposed';
+export type AssetType = 'hardware' | 'software' | 'consumable';
+export type LicenseType = 'per_seat' | 'per_device' | 'site' | 'enterprise' | 'subscription';
+export type ComplianceStatus = 'compliant' | 'over_licensed' | 'under_licensed';
+
+export interface Asset {
+  id: string;
+  number: string;
+  type: AssetType;
+  status: AssetStatus;
+  model: string | null;
+  manufacturer: string | null;
+  serial_number: string | null;
+  asset_tag: string | null;
+  purchase_date: string | null;
+  purchase_cost: number | null;
+  warranty_expiry: string | null;
+  depreciation_method: string | null;
+  salvage_value: number | null;
+  location: string | null;
+  department: string | null;
+  assigned_to: string | null;
+  ci_id: string | null;
+  parent_asset_id: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  assigned_to_name?: string;
+}
+
+export interface SoftwareLicense {
+  id: string;
+  number: string;
+  product_name: string;
+  license_type: LicenseType;
+  total_entitlements: number;
+  allocated_count: number;
+  cost_per_unit: number | null;
+  start_date: string | null;
+  expiry_date: string | null;
+  vendor_id: string | null;
+  compliance_status: ComplianceStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssetLifecycleEvent {
+  id: string;
+  asset_id: string;
+  event_type: string;
+  event_date: string;
+  notes: string | null;
+  performed_by: string | null;
+  performed_by_name?: string;
+}
+
+// ── Vendors & Contracts ────────────────────────────────
+export type VendorType = 'hardware' | 'software' | 'service' | 'consulting';
+export type VendorStatus = 'active' | 'inactive' | 'blacklisted';
+export type ContractType = 'lease' | 'maintenance' | 'support' | 'subscription' | 'nda' | 'msa';
+export type ContractStatus = 'draft' | 'active' | 'expired' | 'cancelled' | 'renewed';
+
+export interface Vendor {
+  id: string;
+  number: string;
+  name: string;
+  type: VendorType;
+  status: VendorStatus;
+  contact_name: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  address: string | null;
+  rating: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Contract {
+  id: string;
+  number: string;
+  vendor_id: string | null;
+  type: ContractType;
+  status: ContractStatus;
+  short_description: string;
+  start_date: string | null;
+  end_date: string | null;
+  value: number | null;
+  currency: string;
+  auto_renew: boolean;
+  renewal_period_days: number | null;
+  payment_terms: string | null;
+  owner_id: string | null;
+  notification_days_before_expiry: number | null;
+  created_at: string;
+  updated_at: string;
+  vendor_name?: string;
+  owner_name?: string;
+}
+
+export interface ContractLineItem {
+  id: string;
+  contract_id: string;
+  description: string;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+  item_type: string | null;
+}
+
+// ── Projects ───────────────────────────────────────────
+export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled';
+export type ProjectType = 'waterfall' | 'agile' | 'hybrid';
+export type ProjectPhase = 'initiation' | 'planning' | 'execution' | 'monitoring' | 'closing';
+export type ProjectTaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled' | 'blocked';
+
+export interface Project {
+  id: string;
+  number: string;
+  name: string;
+  description: string | null;
+  status: ProjectStatus;
+  priority: number;
+  type: ProjectType;
+  start_date: string | null;
+  end_date: string | null;
+  actual_start: string | null;
+  actual_end: string | null;
+  budget: number | null;
+  actual_cost: number | null;
+  owner_id: string | null;
+  portfolio: string | null;
+  percent_complete: number;
+  phase: ProjectPhase | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  owner_name?: string;
+}
+
+export interface ProjectTask {
+  id: string;
+  number: string;
+  project_id: string;
+  parent_task_id: string | null;
+  short_description: string;
+  description: string | null;
+  status: ProjectTaskStatus;
+  priority: number;
+  assigned_to: string | null;
+  assignment_group_id: string | null;
+  planned_start: string | null;
+  planned_end: string | null;
+  actual_start: string | null;
+  actual_end: string | null;
+  estimated_hours: number | null;
+  actual_hours: number | null;
+  percent_complete: number;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+  assigned_to_name?: string;
+}
+
+// ── Portal ─────────────────────────────────────────────
+export interface PortalAnnouncement {
+  id: string;
+  title: string;
+  body: string;
+  type: 'info' | 'warning' | 'critical' | 'maintenance';
+  active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  priority: number;
+  created_by: string;
+  created_at: string;
+}
+
+export interface PortalQuickLink {
+  id: string;
+  label: string;
+  url: string;
+  icon: string | null;
+  category: string | null;
+  order_index: number;
+  active: boolean;
+}
+
+// ── Events & Monitoring ────────────────────────────────
+export type EventSeverity = 'critical' | 'major' | 'minor' | 'warning' | 'info' | 'clear';
+export type EventStatus = 'open' | 'acknowledged' | 'resolved' | 'closed';
+
+export interface MonitoringEvent {
+  id: string;
+  number: string;
+  source: string;
+  severity: EventSeverity;
+  status: EventStatus;
+  node: string | null;
+  type: string | null;
+  metric_name: string | null;
+  metric_value: string | null;
+  threshold: string | null;
+  message_key: string | null;
+  description: string | null;
+  ci_id: string | null;
+  alert_rule_id: string | null;
+  correlation_id: string | null;
+  incident_id: string | null;
+  acknowledged_by: string | null;
+  acknowledged_at: string | null;
+  created_at: string;
+  updated_at: string;
+  acknowledged_by_name?: string;
+}
+
+export interface AlertRule {
+  id: string;
+  name: string;
+  enabled: boolean;
+  source: string;
+  conditions: Record<string, unknown>;
+  actions: Record<string, unknown>;
+  severity_override: string | null;
+  assignment_group_id: string | null;
+  cooldown_minutes: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Surveys ────────────────────────────────────────────
+export type SurveyStatus = 'draft' | 'active' | 'closed';
+export type SurveyType = 'satisfaction' | 'feedback' | 'assessment';
+
+export interface Survey {
+  id: string;
+  number: string;
+  title: string;
+  description: string | null;
+  status: SurveyStatus;
+  type: SurveyType;
+  trigger_table: string | null;
+  trigger_state: string | null;
+  anonymous: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SurveyQuestion {
+  id: string;
+  survey_id: string;
+  question_text: string;
+  type: string;
+  options: Record<string, unknown> | null;
+  required: boolean;
+  order_index: number;
+}
+
+export interface SurveyResponse {
+  id: string;
+  survey_id: string;
+  respondent_id: string | null;
+  table_name: string | null;
+  record_id: string | null;
+  submitted_at: string;
+  overall_score: number | null;
+  respondent_name?: string;
+}
+
+// ── On-Call ────────────────────────────────────────────
+export interface OnCallSchedule {
+  id: string;
+  name: string;
+  assignment_group_id: string | null;
+  timezone: string;
+  rotation_type: string;
+  handoff_time: string;
+  created_at: string;
+  updated_at: string;
+  assignment_group_name?: string;
+}
+
+export interface OnCallRotation {
+  id: string;
+  schedule_id: string;
+  user_id: string;
+  start_date: string;
+  end_date: string;
+  order_index: number;
+  user_name?: string;
+}
+
+export interface EscalationPolicy {
+  id: string;
+  name: string;
+  assignment_group_id: string | null;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+  assignment_group_name?: string;
+}
+
+// ── Business Services ──────────────────────────────────
+export type ServiceCriticality = 'critical' | 'high' | 'medium' | 'low';
+
+export interface BusinessService {
+  id: string;
+  number: string;
+  name: string;
+  description: string | null;
+  owner_id: string | null;
+  status: string;
+  criticality: ServiceCriticality;
+  portfolio: string | null;
+  sla_definition_id: string | null;
+  created_at: string;
+  updated_at: string;
+  owner_name?: string;
+}
+
+export interface ServiceDependency {
+  id: string;
+  service_id: string;
+  depends_on_service_id: string;
+  dependency_type: 'hard' | 'soft';
+  description: string | null;
+  service_name?: string;
+  depends_on_name?: string;
+}
+
+// ── Cost Management ────────────────────────────────────
+export interface CostCenter {
+  id: string;
+  code: string;
+  name: string;
+  department: string | null;
+  manager_id: string | null;
+  budget_annual: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+  manager_name?: string;
+}
+
+export interface CostItem {
+  id: string;
+  number: string;
+  cost_center_id: string;
+  category: string;
+  description: string;
+  amount: number;
+  currency: string;
+  date: string;
+  recurring: boolean;
+  frequency: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  cost_center_name?: string;
+}
+
+// ── Business Continuity ────────────────────────────────
+export type BCPlanStatus = 'draft' | 'active' | 'under_review' | 'retired';
+export type BCPlanType = 'business_continuity' | 'disaster_recovery' | 'crisis_management';
+
+export interface BCPlan {
+  id: string;
+  number: string;
+  name: string;
+  description: string | null;
+  status: BCPlanStatus;
+  type: BCPlanType;
+  owner_id: string | null;
+  last_tested: string | null;
+  next_test_due: string | null;
+  rpo_hours: number | null;
+  rto_hours: number | null;
+  business_service_id: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  owner_name?: string;
+}
+
+export interface BCTest {
+  id: string;
+  plan_id: string;
+  test_date: string;
+  test_type: string;
+  status: string;
+  actual_rto_hours: number | null;
+  actual_rpo_hours: number | null;
+  findings: string | null;
+  conducted_by: string | null;
+  conducted_by_name?: string;
+}
+
+// ── Demand Management ──────────────────────────────────
+export type DemandStatus = 'submitted' | 'screening' | 'approved' | 'rejected' | 'committed' | 'completed';
+export type DemandType = 'project' | 'enhancement' | 'initiative';
+
+export interface Demand {
+  id: string;
+  number: string;
+  title: string;
+  description: string | null;
+  status: DemandStatus;
+  type: DemandType;
+  business_justification: string | null;
+  requested_by: string | null;
+  business_unit: string | null;
+  priority: number;
+  estimated_effort_days: number | null;
+  estimated_cost: number | null;
+  expected_value: number | null;
+  roi_score: number | null;
+  target_quarter: string | null;
+  approved_by: string | null;
+  project_id: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  requested_by_name?: string;
+  approved_by_name?: string;
+}
+
+export interface DemandScore {
+  id: string;
+  demand_id: string;
+  criterion: string;
+  score: number;
+  weight: number;
+  scored_by: string | null;
+}
+
+// ── Capacity Planning ──────────────────────────────────
+export interface ResourcePool {
+  id: string;
+  name: string;
+  type: string;
+  assignment_group_id: string | null;
+  total_capacity_hours: number;
+  period: string;
+  created_at: string;
+  updated_at: string;
+  assignment_group_name?: string;
+}
+
+export interface CapacityAllocation {
+  id: string;
+  pool_id: string;
+  allocated_to_type: string;
+  allocated_to_id: string | null;
+  hours: number;
+  period_start: string;
+  period_end: string;
+  status: string;
+}
+
+export interface CapacityForecast {
+  id: string;
+  pool_id: string;
+  period_start: string;
+  forecasted_demand_hours: number;
+  available_hours: number;
+  gap_hours: number;
+  notes: string | null;
+}
+
+// ── OLA ────────────────────────────────────────────────
+export interface OlaDefinition {
+  id: string;
+  name: string;
+  assignment_group_id: string | null;
+  target_minutes: number;
+  metric: string;
+  conditions: Record<string, unknown>;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OlaInstance {
+  id: string;
+  ola_definition_id: string;
+  table_name: string;
+  record_id: string;
+  start_time: string;
+  target_time: string;
+  actual_time: string | null;
+  breached: boolean;
+}
+
+// ── Saved Views ────────────────────────────────────────
+export interface SavedView {
+  id: string;
+  user_id: string;
+  table_name: string;
+  name: string;
+  is_default: boolean;
+  filters: Record<string, unknown>;
+  columns: string[];
+  sort_by: string | null;
+  sort_order: string;
+  is_shared: boolean;
+  created_at: string;
+  updated_at: string;
+}

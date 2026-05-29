@@ -4,6 +4,7 @@ import { InboundMessage, OutboundMessage, ChatSession } from './types';
 import { getFlow } from './form-flows';
 import { handleLink } from './link-handler';
 import { handleStatus } from './status-handler';
+import { classifyMessage, isNluEnabled } from './nlu';
 import {
   formatHelp,
   formatQuestion,
@@ -88,8 +89,16 @@ async function handleCancel(msg: InboundMessage): Promise<OutboundMessage> {
 
 /**
  * Start a new form flow (incident, change, problem, request).
+ * Optional `prefill` seeds form fields (e.g. short_description inferred by NLU),
+ * skipping the steps already answered. `lead` is prepended to the reply (e.g. an
+ * NLU acknowledgement like "Sounds like an incident — let's log it.").
  */
-async function startFlow(msg: InboundMessage, command: string): Promise<OutboundMessage> {
+async function startFlow(
+  msg: InboundMessage,
+  command: string,
+  prefill?: Record<string, unknown>,
+  lead?: string,
+): Promise<OutboundMessage> {
   const userId = await getLinkedUserId(msg.platform, msg.platformUserId);
   if (!userId) {
     return { text: formatNotLinked() };
@@ -110,6 +119,13 @@ async function startFlow(msg: InboundMessage, command: string): Promise<Outbound
     return { text: formatError(`Unknown command: ${command}`) };
   }
 
+  // Apply prefill and advance past any leading steps that are already answered.
+  const formData: Record<string, unknown> = { ...(prefill || {}) };
+  let startStep = 0;
+  while (startStep < flow.steps.length && formData[flow.steps[startStep].field] !== undefined) {
+    startStep += 1;
+  }
+
   // Create session
   await db('chat_sessions').insert({
     platform: msg.platform,
@@ -117,13 +133,65 @@ async function startFlow(msg: InboundMessage, command: string): Promise<Outbound
     platform_chat_id: msg.platformChatId,
     user_id: userId,
     command,
-    current_step: 0,
-    form_data: JSON.stringify({}),
+    current_step: startStep,
+    form_data: JSON.stringify(formData),
     expires_at: new Date(Date.now() + SESSION_TTL_MS),
   });
 
-  const firstStep = flow.steps[0];
-  return { text: formatQuestion(flow, 0, firstStep) };
+  // If prefill already completed every step, jump straight to the confirmation summary.
+  const body = startStep >= flow.steps.length
+    ? formatSummary(flow, formData)
+    : formatQuestion(flow, startStep, flow.steps[startStep]);
+
+  return { text: lead ? `${lead}\n\n${body}` : body };
+}
+
+/**
+ * No active session and the text isn't a slash command. If NLU is enabled and an
+ * AI provider is configured, infer the user's intent and route accordingly.
+ * Falls back to the help hint when NLU is off or the intent is unclear.
+ */
+async function handleNaturalLanguage(msg: InboundMessage, text: string): Promise<OutboundMessage> {
+  if (!(await isNluEnabled())) {
+    return { text: 'No active session. Type /help for available commands.' };
+  }
+
+  const userId = await getLinkedUserId(msg.platform, msg.platformUserId);
+  if (!userId) {
+    return { text: formatNotLinked() };
+  }
+
+  const result = await classifyMessage(text, userId);
+  if (!result) {
+    return { text: 'No active session. Type /help for available commands.' };
+  }
+
+  switch (result.intent) {
+    case 'incident':
+    case 'change':
+    case 'problem':
+      return startFlow(msg, result.intent, { short_description: result.short_description },
+        `Sounds like you want to log a ${result.intent}. I'll start one for you — you can type /cancel anytime.`);
+    case 'request':
+      return startFlow(msg, 'request');
+    case 'status':
+      if (result.number) return handleStatus(result.number);
+      return { text: 'Which ticket would you like the status of? Send its number, e.g. /status INC0001.' };
+    default:
+      return {
+        text: [
+          "I'm not sure what you'd like to do. I can help you:",
+          '',
+          '• Report an incident (something broken)',
+          '• Request a change',
+          '• Log a problem',
+          '• Make a catalog request',
+          '• Check a ticket status',
+          '',
+          'Just describe it in your own words, or type /help for commands.',
+        ].join('\n'),
+      };
+  }
 }
 
 /**
@@ -162,7 +230,7 @@ async function continueSession(msg: InboundMessage, text: string): Promise<Outbo
     .first() as ChatSession | undefined;
 
   if (!session) {
-    return { text: 'No active session. Type /help for available commands.' };
+    return handleNaturalLanguage(msg, text);
   }
 
   // Check expiry

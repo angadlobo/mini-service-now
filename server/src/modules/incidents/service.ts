@@ -63,7 +63,7 @@ export class IncidentService {
     const impact = Number(data.impact || 3);
     const priority = calcPriority(urgency, impact);
 
-    const [seqResult] = await db.raw("SELECT nextval('incident_number_seq') as seq");
+    const seqResult = (await db.raw("SELECT nextval('incident_number_seq') as seq")).rows[0];
     const number = `INC${seqResult.seq}`;
 
     const [incident] = await db('incidents')

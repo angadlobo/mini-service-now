@@ -1,52 +1,32 @@
 import { db } from '../config/database';
-import { logger } from '../config/logger';
+import { slaService } from '../modules/sla/service';
+
+/**
+ * Thin compatibility wrapper around the SLA module's service so existing callers
+ * (e.g. the incident service) keep working while the SLA logic lives in one place.
+ * The module's service handles condition matching, de-duplication, breach-on-late
+ * completion, and the periodic breach sweep (see modules/sla/engine.ts).
+ */
 
 export async function applySla(
   tableName: string,
   recordId: string,
   recordData: Record<string, unknown>
 ): Promise<Date | null> {
-  const definitions = await db('sla_definitions')
-    .where({ table_name: tableName, active: true });
-
-  for (const def of definitions) {
-    const condition = typeof def.condition === 'string' ? JSON.parse(def.condition) : def.condition;
-    const matches = Object.entries(condition).every(
-      ([key, val]) => String(recordData[key]) === String(val)
-    );
-
-    if (matches) {
-      const startTime = new Date();
-      const plannedEnd = new Date(startTime.getTime() + def.duration_minutes * 60000);
-
-      await db('sla_instances').insert({
-        sla_definition_id: def.id,
-        table_name: tableName,
-        record_id: recordId,
-        start_time: startTime.toISOString(),
-        planned_end_time: plannedEnd.toISOString(),
-      });
-
-      logger.info(`SLA "${def.name}" applied to ${tableName}/${recordId}, due: ${plannedEnd.toISOString()}`);
-      return plannedEnd;
-    }
-  }
-  return null;
+  await slaService.evaluateRecord(tableName, recordId, recordData);
+  const earliest = await db('sla_instances')
+    .where({ table_name: tableName, record_id: recordId })
+    .whereNull('actual_end_time')
+    .orderBy('planned_end_time', 'asc')
+    .first();
+  return earliest ? new Date(earliest.planned_end_time) : null;
 }
 
 export async function checkSlaBreaches(): Promise<number> {
-  const result = await db('sla_instances')
-    .where('breached', false)
-    .whereNull('actual_end_time')
-    .where('planned_end_time', '<', new Date().toISOString())
-    .update({ breached: true });
-
-  return typeof result === 'number' ? result : 0;
+  const breached = await slaService.checkBreaches();
+  return breached.length;
 }
 
 export async function completeSla(tableName: string, recordId: string): Promise<void> {
-  await db('sla_instances')
-    .where({ table_name: tableName, record_id: recordId })
-    .whereNull('actual_end_time')
-    .update({ actual_end_time: new Date().toISOString() });
+  await slaService.completeInstances(tableName, recordId);
 }

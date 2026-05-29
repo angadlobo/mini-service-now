@@ -5,8 +5,13 @@ import { getAdapter } from './adapters';
 import { verifyWhatsAppWebhook } from './adapters/whatsapp-adapter';
 import { buildInteractionResponse } from './adapters/discord-adapter';
 import { Platform } from './types';
+import adminRoutes from './admin-routes';
 
 const router = Router();
+
+// ── Admin (authenticated) ──
+// Mounted before the public webhook routes; has its own auth middleware.
+router.use('/admin', adminRoutes);
 
 /**
  * Generic handler for platforms that follow the standard flow:

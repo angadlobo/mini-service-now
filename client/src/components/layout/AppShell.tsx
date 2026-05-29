@@ -9,9 +9,13 @@ import {
   IconDashboard, IconAlertTriangle, IconExchange, IconShoppingCart, IconBook,
   IconChecklist, IconUsers, IconBell, IconLogout, IconBug, IconServer, IconPlayerPlay,
   IconPlug, IconChartBar, IconForms, IconBrain, IconSettings, IconApps,
-  IconCalendarEvent, IconGavel, IconTemplate, IconShieldOff, IconRocket,
+  IconCalendarEvent, IconGavel, IconTemplate, IconShieldOff, IconRocket, IconPhone, IconUrgent,
   IconChevronRight, IconSearch, IconSun, IconMoon, IconDeviceDesktop,
   IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand,
+  IconPackage, IconClipboardText, IconBuildingStore, IconActivity,
+  IconClipboardList, IconTargetArrow, IconDeviceDesktopAnalytics, IconTopologyRing,
+  IconCoin, IconShield, IconBulb, IconChartDots, IconHome, IconAdjustments,
+  IconReportAnalytics, IconListDetails, IconMessageChatbot, IconAlertOctagon, IconMail,
 } from '@tabler/icons-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth';
@@ -35,14 +39,19 @@ const navSections: NavSection[] = [
     title: 'Overview',
     items: [
       { label: 'Dashboard', icon: IconDashboard, path: '/' },
+      { label: 'Workspace', icon: IconDeviceDesktopAnalytics, path: '/workspace' },
+      { label: 'Analytics', icon: IconChartDots, path: '/analytics' },
       { label: 'My Approvals', icon: IconChecklist, path: '/approvals' },
+      { label: 'Self-Service Portal', icon: IconHome, path: '/portal' },
     ],
   },
   {
     title: 'Service Desk',
     items: [
       { label: 'Incidents', icon: IconAlertTriangle, path: '/incidents' },
+      { label: 'Major Incidents', icon: IconAlertOctagon, path: '/major-incidents' },
       { label: 'Problems', icon: IconBug, path: '/problems' },
+      { label: 'Events', icon: IconActivity, path: '/events' },
     ],
   },
   {
@@ -55,10 +64,39 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: 'CMDB & Catalog',
+    title: 'On-Call',
+    items: [
+      { label: "Who's On Call", icon: IconPhone, path: '/oncall/whos-oncall' },
+      { label: 'Schedules', icon: IconCalendarEvent, path: '/oncall/schedules' },
+      { label: 'Escalation Policies', icon: IconUrgent, path: '/oncall/policies' },
+    ],
+  },
+  {
+    title: 'CMDB & Services',
     items: [
       { label: 'CMDB', icon: IconServer, path: '/cmdb' },
       { label: 'Service Catalog', icon: IconShoppingCart, path: '/catalog' },
+      { label: 'Service Map', icon: IconTopologyRing, path: '/service-mapping' },
+      { label: 'SLA Management', icon: IconAdjustments, path: '/sla' },
+    ],
+  },
+  {
+    title: 'Assets & Contracts',
+    items: [
+      { label: 'Assets', icon: IconPackage, path: '/assets' },
+      { label: 'Licenses', icon: IconListDetails, path: '/assets/licenses' },
+      { label: 'Vendors', icon: IconBuildingStore, path: '/contracts/vendors' },
+      { label: 'Contracts', icon: IconClipboardText, path: '/contracts' },
+    ],
+  },
+  {
+    title: 'Projects & Planning',
+    items: [
+      { label: 'Projects', icon: IconClipboardList, path: '/projects' },
+      { label: 'Demands', icon: IconBulb, path: '/demands' },
+      { label: 'Capacity', icon: IconTargetArrow, path: '/capacity' },
+      { label: 'Cost Management', icon: IconCoin, path: '/cost-management' },
+      { label: 'Business Continuity', icon: IconShield, path: '/business-continuity' },
     ],
   },
   {
@@ -66,6 +104,7 @@ const navSections: NavSection[] = [
     items: [
       { label: 'Knowledge Base', icon: IconBook, path: '/knowledge' },
       { label: 'Reports', icon: IconChartBar, path: '/reports' },
+      { label: 'Surveys', icon: IconReportAnalytics, path: '/surveys' },
       { label: 'Forms', icon: IconForms, path: '/forms' },
     ],
   },
@@ -83,6 +122,10 @@ const adminSection: NavSection = {
     { label: 'AI Providers', icon: IconBrain, path: '/admin/ai-providers' },
     { label: 'AI Prompts', icon: IconBrain, path: '/admin/ai-prompts' },
     { label: 'Notification Channels', icon: IconBell, path: '/admin/notification-channels' },
+    { label: 'Chatbot & Messaging', icon: IconMessageChatbot, path: '/admin/chatbot' },
+    { label: 'Inbound Email', icon: IconMail, path: '/admin/email-processing' },
+    { label: 'Scheduled Jobs', icon: IconAdjustments, path: '/admin/scheduled-jobs' },
+    { label: 'Audit Dashboard', icon: IconListDetails, path: '/admin/audit' },
     { label: 'App Engine', icon: IconApps, path: '/admin/app-engine' },
     { label: 'System Settings', icon: IconSettings, path: '/admin/settings' },
   ],

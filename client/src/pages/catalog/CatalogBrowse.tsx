@@ -4,6 +4,7 @@ import { Stack, Title, SimpleGrid, Card, Text, Group, Badge, Button, SegmentedCo
 import { IconSearch, IconShoppingCart } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { catalogApi } from '../../api/catalog.api';
+import { settingsApi } from '../../api/common.api';
 
 export function CatalogBrowse() {
   const navigate = useNavigate();
@@ -19,6 +20,15 @@ export function CatalogBrowse() {
     queryKey: ['catalog-items', selectedCategory],
     queryFn: () => catalogApi.listItems(selectedCategory === 'all' ? undefined : selectedCategory),
   });
+
+  const { data: catalogSettings } = useQuery({
+    queryKey: ['catalog-settings'],
+    queryFn: settingsApi.getCatalogSettings,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const currencySymbol = catalogSettings?.['catalog.currency_symbol'] ?? '$';
+  const currencySuffix = catalogSettings?.['catalog.currency_suffix'] ?? '/mo';
 
   const filteredItems = search
     ? items.filter((item: any) =>
@@ -79,7 +89,7 @@ export function CatalogBrowse() {
 
               <Group justify="space-between">
                 {item.price > 0 ? (
-                  <Text fw={600} size="sm">${Number(item.price).toFixed(2)}/mo</Text>
+                  <Text fw={600} size="sm">{currencySymbol}{Number(item.price).toFixed(2)}{currencySuffix}</Text>
                 ) : (
                   <Badge color="green" variant="light">Free</Badge>
                 )}

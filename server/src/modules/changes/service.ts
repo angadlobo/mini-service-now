@@ -87,7 +87,7 @@ export class ChangeService {
   }
 
   async create(data: Record<string, unknown>, userId: string) {
-    const [seqResult] = await db.raw("SELECT nextval('change_number_seq') as seq");
+    const seqResult = (await db.raw("SELECT nextval('change_number_seq') as seq")).rows[0];
     const number = `CHG${seqResult.seq}`;
 
     const type = (data.type as string) || 'normal';

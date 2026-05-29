@@ -4,6 +4,7 @@ import { initDatabase } from './config/database';
 import app from './app';
 import { initWorkflowEngine } from './core/workflow-engine';
 import { initWebhookDispatcher } from './core/webhook-dispatcher';
+import { initSlaEngine } from './modules/sla/engine';
 
 async function main() {
   try {
@@ -12,6 +13,7 @@ async function main() {
     // Initialize event-driven engines
     initWorkflowEngine();
     initWebhookDispatcher();
+    initSlaEngine();
 
     app.listen(config.port, () => {
       logger.info(`Server running on port ${config.port}`);

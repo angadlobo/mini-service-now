@@ -90,7 +90,7 @@ export class ReleaseService {
   }
 
   async create(data: Record<string, unknown>, userId: string) {
-    const [seqResult] = await db.raw("SELECT nextval('release_number_seq') as seq");
+    const seqResult = (await db.raw("SELECT nextval('release_number_seq') as seq")).rows[0];
     const number = `REL${String(seqResult.seq).padStart(6, '0')}`;
 
     const releaseType = (data.release_type as string) || 'minor';

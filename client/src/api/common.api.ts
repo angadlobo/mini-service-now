@@ -195,6 +195,7 @@ export const settingsApi = {
   getAll: () => api.get<SystemSetting[]>('/settings').then(r => r.data),
   getByCategory: (category: string) => api.get<SystemSetting[]>(`/settings/${category}`).then(r => r.data),
   update: (settings: { key: string; value: string }[]) => api.put('/settings', { settings }).then(r => r.data),
+  getCatalogSettings: () => api.get<Record<string, string>>('/settings/catalog').then(r => r.data),
 };
 
 // ── Notification Preferences ──────────────────────────
