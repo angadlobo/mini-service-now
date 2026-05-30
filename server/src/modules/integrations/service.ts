@@ -72,7 +72,7 @@ export class IntegrationService {
           last_sync_at: result.ok ? new Date() : undefined,
           updated_at: new Date(),
         });
-        return { success: result.ok, status: result.ok ? 200 : 0, body: result.message };
+        return { success: result.ok, message: result.message, status: result.ok ? 200 : 0 };
       }
     }
 
@@ -87,9 +87,11 @@ export class IntegrationService {
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10000),
       });
-      return { success: res.ok, status: res.status, body: await res.text() };
+      const body = await res.text();
+      const message = res.ok ? `Connection successful (${res.status})` : `Connection failed (${res.status}): ${body}`;
+      return { success: res.ok, message, status: res.status };
     } catch (err: any) {
-      return { success: false, status: 0, body: err.message };
+      return { success: false, message: `Test failed: ${err.message}`, status: 0 };
     }
   }
 
