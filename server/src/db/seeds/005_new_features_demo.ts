@@ -68,7 +68,6 @@ export async function seed(knex: Knex): Promise<void> {
       id: miIds.active1,
       number: 'MIR0001',
       incident_id: inc1001?.id,
-      incident_number: 'INC1001',
       title: 'Database Cluster Failure — Production Down',
       status: 'active',
       severity: 'sev1',
@@ -79,13 +78,11 @@ export async function seed(knex: Knex): Promise<void> {
       declared_by: admin.id,
       declared_at: new Date(Date.now() - 3600000),
       resolved_at: null,
-      created_at: new Date(Date.now() - 3600000),
     },
     {
       id: miIds.active2,
       number: 'MIR0002',
       incident_id: inc1002?.id,
-      incident_number: 'INC1002',
       title: 'Network Connectivity Issues — North Data Center',
       status: 'active',
       severity: 'sev2',
@@ -96,13 +93,11 @@ export async function seed(knex: Knex): Promise<void> {
       declared_by: beth.id,
       declared_at: new Date(Date.now() - 1800000),
       resolved_at: null,
-      created_at: new Date(Date.now() - 1800000),
     },
     {
       id: miIds.resolved1,
       number: 'MIR0003',
       incident_id: inc1003?.id,
-      incident_number: 'INC1003',
       title: 'Email Service Outage — 2-hour recovery',
       status: 'resolved',
       severity: 'sev2',
@@ -113,7 +108,6 @@ export async function seed(knex: Knex): Promise<void> {
       declared_by: admin.id,
       declared_at: new Date(Date.now() - 86400000),
       resolved_at: new Date(Date.now() - 82800000),
-      created_at: new Date(Date.now() - 86400000),
     },
   ]);
 
