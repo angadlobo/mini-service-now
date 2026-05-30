@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Stack, Title, TextInput, Select, NumberInput, Button, Modal,
+  Stack, Title, TextInput, Select, NumberInput, Button, Modal, Textarea,
   Badge, Group, Paper, ActionIcon, Text, Loader, SimpleGrid, Box, Divider,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
@@ -195,7 +195,7 @@ export function DashboardDesigner() {
       <Paper p="md" withBorder>
         <Stack gap="sm">
           <TextInput label="Dashboard Name" required value={name} onChange={(e) => setName(e.currentTarget.value)} />
-          <Textarea label="Description" value={description} onChange={(e) => setDescription(e.currentTarget.value)} />
+          <Textarea label="Description" value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.currentTarget.value)} />
         </Stack>
       </Paper>
 

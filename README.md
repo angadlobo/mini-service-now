@@ -282,10 +282,13 @@ Open [http://localhost:3000](http://localhost:3000)
 - Test webhook from the UI
 
 ### Notifications
-- In-app notifications with bell icon and unread count
-- Email notifications via SMTP (configurable in admin settings)
-- Slack notifications via webhook URL
-- Per-user notification preferences
+- **5 notification channels**: In-app (bell icon), Email (SMTP), Slack, Telegram, WhatsApp
+- **Event-driven delivery**: Configure which events trigger each channel
+- **Per-user preferences**: Users control which channels they receive notifications on
+- **Channel management**: Admin can configure, test, and enable/disable channels
+- **User preferences UI**: Control notification channels per user via profile settings
+- **Full integration**: Works with incidents, changes, problems, approvals, workflows, SLA breaches
+- **[📋 Full Notification Guide](NOTIFICATION_GUIDE.md)**: Setup instructions, troubleshooting, API endpoints, best practices
 
 ### Approvals
 - Centralized My Approvals page
@@ -598,7 +601,7 @@ The application seeds itself on first startup with:
 - 4 change approval rules (by risk level, change type, and impact)
 - 7 reports with 3 scheduled report deliveries (incident, change, asset, problem reports)
 - 6 AI prompt templates (ready to use once a provider is configured)
-- 3 notification channels (in-app, email, Slack)
+- 3 notification channels (in-app, email, Slack) with demo user preferences showing how to configure per-event subscriptions
 - 2 form templates (Employee Onboarding, Change Request Intake) with 4 submissions
 - 15+ approval records across changes and catalog requests
 - Journal entries on incidents, changes, and problems, 4 SLA definitions

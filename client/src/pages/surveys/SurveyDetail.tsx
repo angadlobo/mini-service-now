@@ -66,7 +66,7 @@ export function SurveyDetail() {
         </Paper>
       )}
 
-      <Tabs value={tab} onTabChange={setTab}>
+      <Tabs value={tab} onChange={setTab}>
         <Tabs.List>
           <Tabs.Tab value="questions" leftSection={<IconCheck size={14} />}>Questions</Tabs.Tab>
           <Tabs.Tab value="analytics" leftSection={<IconChartBar size={14} />}>Results ({analytics?.response_count || 0})</Tabs.Tab>
@@ -90,8 +90,7 @@ export function SurveyDetail() {
                   {q.type === 'rating_1_5' && (
                     <Rating
                       value={parseInt(answers[q.id] || '0')}
-                      onChange={(v) => setAnswers({ ...answers, [q.id]: String(v) })}
-                      disabled={!canRespond}
+                      onChange={(v) => canRespond && setAnswers({ ...answers, [q.id]: String(v) })}
                     />
                   )}
 
@@ -99,9 +98,8 @@ export function SurveyDetail() {
                   {q.type === 'rating_1_10' && (
                     <Rating
                       value={parseInt(answers[q.id] || '0')}
-                      onChange={(v) => setAnswers({ ...answers, [q.id]: String(v) })}
+                      onChange={(v) => canRespond && setAnswers({ ...answers, [q.id]: String(v) })}
                       count={10}
-                      disabled={!canRespond}
                     />
                   )}
 
@@ -130,8 +128,7 @@ export function SurveyDetail() {
                           label={opt.charAt(0).toUpperCase() + opt.slice(1)}
                           value={opt}
                           checked={answers[q.id] === opt}
-                          onChange={() => setAnswers({ ...answers, [q.id]: opt })}
-                          disabled={!canRespond}
+                          onChange={() => canRespond && setAnswers({ ...answers, [q.id]: opt })}
                         />
                       ))}
                     </Group>
@@ -142,9 +139,8 @@ export function SurveyDetail() {
                     <Select
                       data={(JSON.parse(q.options || '[]') as any[]).map((o: any) => ({ value: o.value, label: o.label }))}
                       value={answers[q.id] || null}
-                      onChange={(v) => v && setAnswers({ ...answers, [q.id]: v })}
+                      onChange={(v) => canRespond && v && setAnswers({ ...answers, [q.id]: v })}
                       placeholder="Select an option"
-                      disabled={!canRespond}
                     />
                   )}
 
@@ -153,8 +149,7 @@ export function SurveyDetail() {
                     <Textarea
                       placeholder="Your response"
                       value={answers[q.id] || ''}
-                      onChange={(e) => setAnswers({ ...answers, [q.id]: e.currentTarget.value })}
-                      disabled={!canRespond}
+                      onChange={(e) => canRespond && setAnswers({ ...answers, [q.id]: e.currentTarget.value })}
                       minRows={3}
                     />
                   )}

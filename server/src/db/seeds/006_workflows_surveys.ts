@@ -471,5 +471,76 @@ export async function seed(knex: Knex): Promise<void> {
     ]);
   }
 
-  console.log('✅ Seeded: Automation workflows (4 templates + executions), Surveys (4 templates with questions & responses)');
+  // ══════════════════════════════════════════════════════
+  //  4. NOTIFICATION CHANNELS (Demo Configuration)
+  // ══════════════════════════════════════════════════════
+  const channelIds = { inApp: uuid(), email: uuid(), slack: uuid() };
+
+  await knex('notification_channels').insert([
+    {
+      id: channelIds.inApp,
+      name: 'In-App Notifications',
+      description: 'Always-on in-app bell icon notifications',
+      type: 'in_app',
+      config: JSON.stringify({}),
+      active: true,
+      created_by: admin.id,
+      created_at: new Date(),
+    },
+    {
+      id: channelIds.email,
+      name: 'Email Alerts',
+      description: 'Email notifications (requires SMTP config)',
+      type: 'email',
+      config: JSON.stringify({ to: null }), // Will use user email
+      active: true,
+      created_by: admin.id,
+      created_at: new Date(),
+    },
+    {
+      id: channelIds.slack,
+      name: 'Slack Incidents',
+      description: 'Send critical incidents to Slack',
+      type: 'slack',
+      config: JSON.stringify({}), // Uses global SLACK_WEBHOOK_URL
+      active: true,
+      created_by: admin.id,
+      created_at: new Date(),
+    },
+  ]);
+
+  // Set up demo user preferences (Beth gets email for assignments, Slack for escalations)
+  if (beth) {
+    await knex('notification_preferences').insert([
+      {
+        user_id: beth.id,
+        channel_id: channelIds.inApp,
+        events: JSON.stringify(['record.assigned', 'approval.requested', 'incident.created', 'change.approved']),
+        active: true,
+        created_at: new Date(),
+      },
+      {
+        user_id: beth.id,
+        channel_id: channelIds.email,
+        events: JSON.stringify(['record.assigned', 'approval.requested']),
+        active: true,
+        created_at: new Date(),
+      },
+    ]);
+  }
+
+  // Admin gets all notifications
+  if (admin) {
+    await knex('notification_preferences').insert([
+      {
+        user_id: admin.id,
+        channel_id: channelIds.inApp,
+        events: JSON.stringify(['record.assigned', 'approval.requested', 'incident.created', 'change.approved', 'workflow.executed', 'sla.breached']),
+        active: true,
+        created_at: new Date(),
+      },
+    ]);
+  }
+
+  console.log('✅ Seeded: Automation workflows (4 templates + executions), Surveys (4 templates), Notification channels (3 types with user preferences)');
 }

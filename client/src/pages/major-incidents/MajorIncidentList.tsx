@@ -124,7 +124,7 @@ export function MajorIncidentList() {
             clearable
             value={form.incident_id}
             onChange={(v) => setForm({ ...form, incident_id: v || '' })}
-            data={(incidents?.rows || []).map((inc: any) => ({
+            data={(incidents?.data || []).map((inc: any) => ({
               value: inc.id,
               label: `${inc.number} — ${inc.short_description}`,
               searchValue: `${inc.number} ${inc.short_description}`,
