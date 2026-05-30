@@ -47,7 +47,8 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Dev\\\\mini-service-now\\\\client\\\\src\\\\pages\" -Recurse -Name *.tsx)",
       "PowerShell(head *)",
       "Bash(npm run *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git commit *)"
     ]
   }
 }

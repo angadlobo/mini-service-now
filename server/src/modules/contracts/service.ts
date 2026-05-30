@@ -168,9 +168,39 @@ export class ContractService {
         currency: data.currency || 'USD',
         auto_renew: data.auto_renew || false,
         renewal_period_days: data.renewal_period_days || null,
+        renewal_date: data.renewal_date || null,
+        renewal_reminder_days: data.renewal_reminder_days || 30,
         payment_terms: data.payment_terms || null,
         owner_id: data.owner_id || userId,
         notification_days_before_expiry: data.notification_days_before_expiry || null,
+        // License fields
+        license_count: data.license_count || null,
+        license_type: data.license_type || null,
+        license_key: data.license_key || null,
+        license_expiration: data.license_expiration || null,
+        // Contract details
+        terms_and_conditions: data.terms_and_conditions || null,
+        scope_of_work: data.scope_of_work || null,
+        contract_document_url: data.contract_document_url || null,
+        // SLA & Support
+        sla_response_time: data.sla_response_time || null,
+        sla_resolution_time: data.sla_resolution_time || null,
+        support_hours: data.support_hours || null,
+        support_channels: data.support_channels || null,
+        // Contacts
+        primary_contact_id: data.primary_contact_id || null,
+        secondary_contact_id: data.secondary_contact_id || null,
+        // Financial
+        discount_percentage: data.discount_percentage || null,
+        actual_cost: data.actual_cost || data.value || null,
+        payment_method: data.payment_method || null,
+        invoice_frequency: data.invoice_frequency || null,
+        // Compliance
+        compliance_status: data.compliance_status || 'pending_review',
+        is_critical: data.is_critical || false,
+        // Notes
+        internal_notes: data.internal_notes || null,
+        external_notes: data.external_notes || null,
         created_by: userId,
       })
       .returning('*');
@@ -228,6 +258,120 @@ export class ContractService {
     if (!item) throw new AppError(404, 'Line item not found');
 
     await db('contract_line_items').where('id', lineItemId).del();
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // Contract Linked Assets (which assets are covered by contract)
+  // ══════════════════════════════════════════════════════════
+
+  async getLinkedAssets(contractId: string) {
+    return db('contract_linked_assets')
+      .join('cis', 'cis.id', 'contract_linked_assets.ci_id')
+      .where('contract_linked_assets.contract_id', contractId)
+      .select('contract_linked_assets.*', 'cis.number as ci_number', 'cis.name as ci_name');
+  }
+
+  async linkAsset(contractId: string, ciId: string, data: Record<string, unknown>) {
+    const contract = await db('contracts').where('id', contractId).first();
+    if (!contract) throw new AppError(404, 'Contract not found');
+
+    const ci = await db('cis').where('id', ciId).first();
+    if (!ci) throw new AppError(404, 'Asset not found');
+
+    const [link] = await db('contract_linked_assets')
+      .insert({
+        contract_id: contractId,
+        ci_id: ciId,
+        license_type: data.license_type || 'support',
+        coverage_start: data.coverage_start || null,
+        coverage_end: data.coverage_end || null,
+        coverage_notes: data.coverage_notes || null,
+        created_by: data.created_by,
+      })
+      .returning('*');
+
+    return link;
+  }
+
+  async unlinkAsset(linkId: string) {
+    await db('contract_linked_assets').where('id', linkId).del();
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // Contract Renewals
+  // ══════════════════════════════════════════════════════════
+
+  async getRenewals(contractId: string) {
+    return db('contract_renewals')
+      .where('contract_id', contractId)
+      .orderBy('renewal_date', 'desc');
+  }
+
+  async addRenewal(contractId: string, data: Record<string, unknown>, userId: string) {
+    const contract = await db('contracts').where('id', contractId).first();
+    if (!contract) throw new AppError(404, 'Contract not found');
+
+    const [renewal] = await db('contract_renewals')
+      .insert({
+        contract_id: contractId,
+        previous_contract_id: data.previous_contract_id || null,
+        renewal_date: data.renewal_date,
+        next_renewal_date: data.next_renewal_date || null,
+        renewed_value: data.renewed_value || null,
+        renewal_status: data.renewal_status || 'pending',
+        renewal_notes: data.renewal_notes || null,
+        approved_by_id: data.approved_by_id || null,
+        approval_date: data.approved_by_id ? new Date() : null,
+        created_by: userId,
+      })
+      .returning('*');
+
+    return renewal;
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // Contract Milestones (for project-based contracts)
+  // ══════════════════════════════════════════════════════════
+
+  async getMilestones(contractId: string) {
+    return db('contract_milestones')
+      .where('contract_id', contractId)
+      .orderBy('due_date', 'asc');
+  }
+
+  async addMilestone(contractId: string, data: Record<string, unknown>, userId: string) {
+    const contract = await db('contracts').where('id', contractId).first();
+    if (!contract) throw new AppError(404, 'Contract not found');
+
+    const [milestone] = await db('contract_milestones')
+      .insert({
+        contract_id: contractId,
+        name: data.name,
+        description: data.description || null,
+        due_date: data.due_date,
+        completed_date: data.completed_date || null,
+        status: data.status || 'pending',
+        payment_due: data.payment_due || null,
+        payment_received: data.payment_received || null,
+        deliverables: data.deliverables || null,
+        notes: data.notes || null,
+        created_by: userId,
+      })
+      .returning('*');
+
+    return milestone;
+  }
+
+  async updateMilestone(milestoneId: string, data: Record<string, unknown>) {
+    const milestone = await db('contract_milestones').where('id', milestoneId).first();
+    if (!milestone) throw new AppError(404, 'Milestone not found');
+
+    const [updated] = await db('contract_milestones')
+      .where('id', milestoneId)
+      .update({ ...data, updated_at: new Date() })
+      .returning('*');
+
+    return updated;
   }
 }
 
