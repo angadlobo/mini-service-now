@@ -61,12 +61,22 @@ export function applyQueryOptions(
 
 export function parseQueryParams(query: Record<string, unknown>): QueryOptions {
   const { page, pageSize, sortBy, sortOrder, search, ...rest } = query;
+
+  // Exclude SQL keywords and reserved parameters from filters
+  const sqlKeywords = new Set(['limit', 'offset', 'select', 'where', 'order', 'group', 'having']);
+  const filters: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(rest)) {
+    if (!sqlKeywords.has(key.toLowerCase())) {
+      filters[key] = value;
+    }
+  }
+
   return {
     page: page ? Number(page) : undefined,
     pageSize: pageSize ? Number(pageSize) : undefined,
     sortBy: sortBy as string | undefined,
     sortOrder: (sortOrder as 'asc' | 'desc') || undefined,
     search: search as string | undefined,
-    filters: rest as Record<string, unknown>,
+    filters,
   };
 }
