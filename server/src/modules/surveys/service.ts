@@ -1,8 +1,25 @@
 import { db } from '../../config/database';
 import { applyQueryOptions, QueryOptions } from '../../core/query-builder';
 import { AppError } from '../../middleware/error';
+import { sendEmail } from '../../core/email-sender';
 
 export class SurveyService {
+  // ══════════════════════════════════════
+  // Helpers
+  // ══════════════════════════════════════
+
+  private isSurveyActive(survey: any): boolean {
+    // Check explicit is_active flag
+    if (!survey.is_active) return false;
+
+    // Check time-based activation
+    const now = new Date();
+    if (survey.active_from && new Date(survey.active_from) > now) return false;
+    if (survey.active_until && new Date(survey.active_until) < now) return false;
+
+    return true;
+  }
+
   // ══════════════════════════════════════
   // Core CRUD
   // ══════════════════════════════════════
@@ -164,7 +181,7 @@ export class SurveyService {
   async submitResponse(surveyId: string, data: Record<string, unknown>, userId: string | null) {
     const survey = await db('surveys').where('id', surveyId).first();
     if (!survey) throw new AppError(404, 'Survey not found');
-    if (survey.status !== 'active') throw new AppError(400, 'Survey is not active');
+    if (!this.isSurveyActive(survey)) throw new AppError(400, 'Survey is not currently active');
 
     const answers = data.answers as Array<{ question_id: string; answer_value?: string | null; answer_text?: string | null }>;
 
@@ -374,6 +391,59 @@ export class SurveyService {
       average_score: (avgScore as any)?.avg ? Math.round(Number((avgScore as any).avg) * 100) / 100 : null,
       questions: questionStats,
     };
+  }
+
+  // ══════════════════════════════════════
+  // Email Sharing
+  // ══════════════════════════════════════
+
+  async shareViaEmail(surveyId: string, recipientEmails: string[], message?: string) {
+    const survey = await db('surveys').where('id', surveyId).first();
+    if (!survey) throw new AppError(404, 'Survey not found');
+
+    const surveyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/surveys/${surveyId}`;
+
+    const emailBody = `
+${message ? `<p>${message.replace(/\n/g, '<br>')}</p>` : ''}
+
+<p>You are invited to take our survey: <strong>${survey.title}</strong></p>
+
+${survey.description ? `<p>${survey.description}</p>` : ''}
+
+<p><a href="${surveyUrl}" style="background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Take Survey</a></p>
+
+<p>Survey Link: <a href="${surveyUrl}">${surveyUrl}</a></p>
+
+<hr>
+
+<p>This survey ${survey.active_until ? `closes on ${new Date(survey.active_until).toLocaleString()}` : 'is open for responses'}.</p>
+    `;
+
+    for (const email of recipientEmails) {
+      await sendEmail({
+        to: email,
+        subject: `Survey: ${survey.title}`,
+        html: emailBody,
+      });
+    }
+
+    // Log the sharing activity
+    await db('survey_shares').insert({
+      survey_id: surveyId,
+      recipient_count: recipientEmails.length,
+      shared_at: new Date(),
+    }).onConflict().ignore();
+
+    return {
+      message: `Survey shared with ${recipientEmails.length} recipient(s)`,
+      recipients: recipientEmails.length,
+    };
+  }
+
+  async getSurveyLink(surveyId: string): Promise<string> {
+    const survey = await db('surveys').where('id', surveyId).first();
+    if (!survey) throw new AppError(404, 'Survey not found');
+    return `${process.env.FRONTEND_URL || 'http://localhost:3000'}/surveys/${surveyId}`;
   }
 }
 

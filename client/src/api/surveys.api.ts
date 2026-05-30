@@ -16,4 +16,6 @@ export const surveysApi = {
   getResponses: (id: string, params?: QueryParams) => api.get(`/surveys/${id}/responses`, { params }).then(r => r.data),
   getResponseDetail: (responseId: string) => api.get(`/surveys/responses/${responseId}`).then(r => r.data),
   getAnalytics: (id: string) => api.get(`/surveys/${id}/analytics`).then(r => r.data),
+  shareViaEmail: (id: string, data: any) => api.post(`/surveys/${id}/share`, data).then(r => r.data),
+  getSurveyLink: (id: string) => api.get(`/surveys/${id}/link`).then(r => r.data),
 };

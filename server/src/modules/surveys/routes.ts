@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { surveyController } from './controller';
 import { authenticate, requireRole } from '../../middleware/auth';
 import { validate } from '../../middleware/validate';
-import { createSurveySchema, updateSurveySchema, createQuestionSchema, updateQuestionSchema, submitResponseSchema } from './schema';
+import { createSurveySchema, updateSurveySchema, createQuestionSchema, updateQuestionSchema, submitResponseSchema, shareViEmailSchema } from './schema';
 
 const router = Router();
 
@@ -29,5 +29,9 @@ router.get('/:id/responses', (req, res, next) => surveyController.getResponses(r
 
 // ── Analytics ──
 router.get('/:id/analytics', (req, res, next) => surveyController.getAnalytics(req as any, res, next));
+
+// ── Email Sharing ──
+router.post('/:id/share', requireRole('admin'), validate(shareViEmailSchema), (req, res, next) => surveyController.shareViaEmail(req as any, res, next));
+router.get('/:id/link', (req, res, next) => surveyController.getSurveyLink(req as any, res, next));
 
 export default router;

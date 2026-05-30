@@ -108,6 +108,25 @@ export class SurveyController {
       res.json(analytics);
     } catch (err) { next(err); }
   }
+
+  // ── Email Sharing ──
+  async shareViaEmail(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await surveyService.shareViaEmail(
+        req.params.id,
+        req.body.recipient_emails,
+        req.body.message
+      );
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
+  async getSurveyLink(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const link = await surveyService.getSurveyLink(req.params.id);
+      res.json({ link });
+    } catch (err) { next(err); }
+  }
 }
 
 export const surveyController = new SurveyController();

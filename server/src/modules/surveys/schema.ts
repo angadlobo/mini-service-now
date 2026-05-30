@@ -5,6 +5,9 @@ export const createSurveySchema = z.object({
   description: z.string().max(10000).optional(),
   type: z.enum(['satisfaction', 'feedback', 'assessment']).optional(),
   status: z.enum(['draft', 'active', 'closed']).optional(),
+  is_active: z.boolean().optional(),
+  active_from: z.string().datetime().optional().nullable(),
+  active_until: z.string().datetime().optional().nullable(),
   trigger_table: z.string().max(50).optional().nullable(),
   trigger_state: z.string().max(30).optional().nullable(),
   anonymous: z.boolean().optional(),
@@ -15,9 +18,17 @@ export const updateSurveySchema = z.object({
   description: z.string().max(10000).optional(),
   type: z.enum(['satisfaction', 'feedback', 'assessment']).optional(),
   status: z.enum(['draft', 'active', 'closed']).optional(),
+  is_active: z.boolean().optional(),
+  active_from: z.string().datetime().optional().nullable(),
+  active_until: z.string().datetime().optional().nullable(),
   trigger_table: z.string().max(50).optional().nullable(),
   trigger_state: z.string().max(30).optional().nullable(),
   anonymous: z.boolean().optional(),
+});
+
+export const shareViEmailSchema = z.object({
+  recipient_emails: z.array(z.string().email()).min(1),
+  message: z.string().max(1000).optional(),
 });
 
 export const createQuestionSchema = z.object({
