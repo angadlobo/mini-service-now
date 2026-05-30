@@ -111,7 +111,6 @@ export async function up(knex: Knex): Promise<void> {
 
     // Renewal & Expiration
     t.timestamp('renewal_date');
-    t.boolean('auto_renewal').alter(); // Re-define if needed
     t.integer('renewal_reminder_days').defaultTo(30);
 
     // Service Level & Support
