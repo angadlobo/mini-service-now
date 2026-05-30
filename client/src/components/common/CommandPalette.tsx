@@ -1,12 +1,13 @@
 import { Spotlight, SpotlightActionData } from '@mantine/spotlight';
 import { useNavigate } from 'react-router-dom';
+import { Suspense } from 'react';
 import {
   IconDashboard, IconAlertTriangle, IconExchange, IconBug, IconServer,
   IconShoppingCart, IconBook, IconChartBar, IconForms, IconChecklist,
   IconRocket, IconCalendarEvent, IconPlus, IconSearch,
 } from '@tabler/icons-react';
 
-export function CommandPalette() {
+function SpotlightContent() {
   const navigate = useNavigate();
 
   const actions: SpotlightActionData[] = [
@@ -38,5 +39,13 @@ export function CommandPalette() {
         placeholder: 'Search pages, actions...',
       }}
     />
+  );
+}
+
+export function CommandPalette() {
+  return (
+    <Suspense fallback={null}>
+      <SpotlightContent />
+    </Suspense>
   );
 }
