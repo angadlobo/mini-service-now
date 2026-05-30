@@ -263,6 +263,16 @@ Open [http://localhost:3000](http://localhost:3000)
 - Export to CSV
 - Schedule reports (cron-based)
 
+### Surveys
+- **Question Types**: Rating (1-5), Rating (1-10), NPS (0-10), Yes/No, Multiple Choice, Text
+- **Question Management**: Add, edit, delete, and reorder questions
+- **Email Distribution**: Share surveys via email with custom invitations to multiple recipients
+- **Date-Based Activation**: Set active_from and active_until timestamps, or toggle is_active manually
+- **Response Submission**: Collect responses from active surveys with required field validation
+- **Analytics**: Per-question statistics with distribution, averages, NPS breakdown, and sample feedback
+- **Shareable Links**: Copy survey link for direct distribution
+- **Respondent Tracking**: Anonymous or identified responses (configurable per survey)
+
 ### Integration Providers (Bidirectional)
 - **8 first-class providers**: GitHub, GitLab, Jira, PagerDuty, Microsoft Teams, Azure DevOps, Datadog, Grafana
 - **Bidirectional data flow**: push actions to external systems and receive inbound webhooks
