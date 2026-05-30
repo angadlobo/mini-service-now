@@ -35,10 +35,15 @@ export function IncidentTaskPanel({ incidentId }: IncidentTaskPanelProps) {
     assigned_to: '',
   });
 
-  const { data: tasks, isLoading } = useQuery({
+  const { data: tasksResponse, isLoading } = useQuery({
     queryKey: ['incident-tasks', incidentId],
-    queryFn: () => api.get(`/incidents/${incidentId}/tasks`),
+    queryFn: async () => {
+      const response = await api.get(`/incidents/${incidentId}/tasks`);
+      return response.data;
+    },
   });
+
+  const tasks = tasksResponse?.data || [];
 
   const { data: users } = useQuery({
     queryKey: ['users-list'],
@@ -110,7 +115,7 @@ export function IncidentTaskPanel({ incidentId }: IncidentTaskPanelProps) {
 
         <LoadingOverlay visible={isLoading} />
 
-        {tasks?.data?.length === 0 ? (
+        {!tasks || tasks.length === 0 ? (
           <Text size="sm" c="dimmed">No tasks yet</Text>
         ) : (
           <Table striped highlightOnHover size="sm">
@@ -123,7 +128,7 @@ export function IncidentTaskPanel({ incidentId }: IncidentTaskPanelProps) {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {tasks?.data?.map((task: IncidentTask) => (
+              {tasks.map((task: IncidentTask) => (
                 <Table.Tr key={task.id}>
                   <Table.Td>
                     <Text size="xs" fw={600}>{task.number}</Text>
