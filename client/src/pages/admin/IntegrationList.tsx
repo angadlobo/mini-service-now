@@ -53,6 +53,7 @@ export function IntegrationList() {
   const [form, setForm] = useState(emptyForm);
   const [logsId, setLogsId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testingId, setTestingId] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['integrations', page],
@@ -91,11 +92,14 @@ export function IntegrationList() {
     mutationFn: (id: string) => integrationsApi.test(id),
     onSuccess: (result: any) => {
       setTestResult(result);
-      notifications.show({ title: 'Test Complete', message: result.success ? 'Connection successful' : 'Connection failed', color: result.success ? 'green' : 'red' });
+      notifications.show({ title: 'Test Complete', message: result.message, color: result.success ? 'green' : 'red' });
+      setTestingId(null);
     },
     onError: (err: any) => {
-      setTestResult({ success: false, message: err.response?.data?.error || 'Test failed' });
-      notifications.show({ title: 'Test Failed', message: err.response?.data?.error || 'Test failed', color: 'red' });
+      const message = err.response?.data?.error || 'Test failed';
+      setTestResult({ success: false, message });
+      notifications.show({ title: 'Test Failed', message, color: 'red' });
+      setTestingId(null);
     },
   });
 
@@ -151,7 +155,9 @@ export function IntegrationList() {
           <Group gap="xs" wrap="nowrap">
             <Button size="xs" variant="light" leftSection={<IconEdit size={14} />} onClick={() => openEdit(r)}>Edit</Button>
             <Button size="xs" variant="light" color="teal" leftSection={<IconTestPipe size={14} />}
-              onClick={() => testMutation.mutate(r.id)} loading={testMutation.isPending}>
+              onClick={() => { setTestingId(r.id); testMutation.mutate(r.id); }}
+              loading={testingId === r.id && testMutation.isPending}
+              disabled={testingId !== null && testingId !== r.id}>
               Test
             </Button>
             <Button size="xs" variant="light" color="violet" leftSection={<IconList size={14} />}
@@ -234,7 +240,8 @@ export function IntegrationList() {
             {editId && (
               <Group>
                 <Button variant="light" color="teal" leftSection={<IconTestPipe size={14} />}
-                  onClick={() => testMutation.mutate(editId)} loading={testMutation.isPending}>
+                  onClick={() => { setTestingId(editId); testMutation.mutate(editId); }}
+                  loading={testingId === editId && testMutation.isPending}>
                   Test Connection
                 </Button>
                 {testResult && (
