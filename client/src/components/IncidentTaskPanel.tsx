@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Stack, Paper, Title, Button, Modal, TextInput, Textarea, Select, Group, Text, Badge, Table, ActionIcon, LoadingOverlay, Grid } from '@mantine/core';
+import { Stack, Paper, Title, Button, Modal, TextInput, Textarea, Select, Group, Text, Table, ActionIcon, LoadingOverlay, Grid } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconTrash, IconEdit, IconCheck } from '@tabler/icons-react';
+import { IconPlus, IconTrash } from '@tabler/icons-react';
 import api from '../api/client';
 import { usersApi } from '../api/common.api';
-import { useAuthStore } from '../store/auth';
 
 interface IncidentTask {
   id: string;
@@ -28,9 +27,7 @@ interface IncidentTaskPanelProps {
 
 export function IncidentTaskPanel({ incidentId }: IncidentTaskPanelProps) {
   const queryClient = useQueryClient();
-  const user = useAuthStore((s) => s.user);
   const [opened, setOpened] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     short_description: '',
     description: '',
@@ -90,7 +87,6 @@ export function IncidentTaskPanel({ incidentId }: IncidentTaskPanelProps) {
 
   const resetForm = () => {
     setForm({ short_description: '', description: '', priority: '3', assigned_to: '' });
-    setEditingId(null);
   };
 
   const userOptions = (users?.data || []).map((u: any) => ({ value: u.id, label: `${u.first_name} ${u.last_name}` }));
@@ -101,20 +97,6 @@ export function IncidentTaskPanel({ incidentId }: IncidentTaskPanelProps) {
     { value: 'completed', label: 'Completed' },
     { value: 'closed', label: 'Closed' },
   ];
-
-  const priorityColor = (priority: number) => {
-    if (priority === 1) return 'red';
-    if (priority === 2) return 'orange';
-    if (priority === 3) return 'yellow';
-    return 'blue';
-  };
-
-  const statusColor = (status: string) => {
-    if (status === 'completed' || status === 'closed') return 'green';
-    if (status === 'in_progress') return 'blue';
-    if (status === 'pending') return 'gray';
-    return 'gray';
-  };
 
   return (
     <Paper withBorder p="md">
