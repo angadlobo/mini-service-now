@@ -118,7 +118,8 @@ export default function App() {
 
   return (
     <AppShell>
-      <CommandPalette />
+      {/* CommandPalette disabled due to Spotlight Mantine compatibility issue */}
+      {/* <CommandPalette /> */}
       <ChatBot />
       <ErrorBoundary resetKey={location.pathname}>
       <Routes>
