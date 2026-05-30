@@ -31,8 +31,6 @@ export async function seed(knex: Knex): Promise<void> {
       condition: JSON.stringify({ priority: '1' }),
       duration_minutes: 240,
       active: true,
-      created_by: admin.id,
-      created_at: new Date(),
     },
     {
       id: slaIds.p2,
@@ -41,8 +39,6 @@ export async function seed(knex: Knex): Promise<void> {
       condition: JSON.stringify({ priority: '2' }),
       duration_minutes: 480,
       active: true,
-      created_by: admin.id,
-      created_at: new Date(),
     },
     {
       id: slaIds.p3,
@@ -51,8 +47,6 @@ export async function seed(knex: Knex): Promise<void> {
       condition: JSON.stringify({ priority: '3' }),
       duration_minutes: 1440,
       active: true,
-      created_by: admin.id,
-      created_at: new Date(),
     },
     {
       id: slaIds.problem,
@@ -61,8 +55,6 @@ export async function seed(knex: Knex): Promise<void> {
       condition: JSON.stringify({}),
       duration_minutes: 2880,
       active: true,
-      created_by: admin.id,
-      created_at: new Date(),
     },
   ]);
 
