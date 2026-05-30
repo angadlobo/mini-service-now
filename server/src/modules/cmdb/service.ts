@@ -4,6 +4,7 @@ import { validateStateTransition } from '../../core/state-machine';
 import { recordAudit, diffRecords } from '../../core/audit-trail';
 import { eventBus } from '../../core/event-bus';
 import { AppError } from '../../middleware/error';
+import path from 'path';
 
 export class CmdbService {
   // CI Types
@@ -347,6 +348,66 @@ export class CmdbService {
       assigned_to_department: null,
       updated_at: new Date(),
     });
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // Asset Image Upload
+  // ══════════════════════════════════════════════════════════
+
+  async uploadAssetImage(ciId: string, file: any) {
+    const ci = await db('cis').where('id', ciId).first();
+    if (!ci) throw new AppError(404, 'Asset not found');
+
+    if (!file) throw new AppError(400, 'No file provided');
+
+    // Store relative path to the uploaded file
+    const relativePath = `/uploads/${path.basename(file.path)}`;
+
+    // Update asset with image
+    const [updated] = await db('cis')
+      .where('id', ciId)
+      .update({
+        image_path: relativePath,
+        image_name: file.originalname,
+        updated_at: new Date(),
+      })
+      .returning('*');
+
+    return {
+      image_path: relativePath,
+      image_name: file.originalname,
+      message: 'Asset image uploaded successfully',
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // License Image Upload (optional certificate/document image)
+  // ══════════════════════════════════════════════════════════
+
+  async uploadLicenseImage(licenseId: string, file: any) {
+    const license = await db('asset_licenses').where('id', licenseId).first();
+    if (!license) throw new AppError(404, 'License not found');
+
+    if (!file) throw new AppError(400, 'No file provided');
+
+    // Store relative path to the uploaded file
+    const relativePath = `/uploads/${path.basename(file.path)}`;
+
+    // Update license with image
+    const [updated] = await db('asset_licenses')
+      .where('id', licenseId)
+      .update({
+        image_path: relativePath,
+        image_name: file.originalname,
+        updated_at: new Date(),
+      })
+      .returning('*');
+
+    return {
+      image_path: relativePath,
+      image_name: file.originalname,
+      message: 'License image uploaded successfully',
+    };
   }
 }
 

@@ -38,6 +38,10 @@ export async function up(knex: Knex): Promise<void> {
     t.string('cost_center');
     t.string('asset_category');
 
+    // Image storage (required field for assets - for photos/pictures of the asset)
+    t.text('image_path'); // Relative path to uploaded image (e.g., "/uploads/abc123-photo.jpg")
+    t.string('image_name'); // Original filename for display
+
     // Tracking
     t.uuid('assigned_by_id').references('id').inTable('users').onDelete('SET NULL');
     t.timestamp('assigned_at');
@@ -74,6 +78,9 @@ export async function up(knex: Knex): Promise<void> {
     t.string('status'); // active, expiring_soon, expired, suspended
     t.decimal('license_cost', 10, 2);
     t.text('notes');
+    // Optional image for license certificate/document
+    t.text('image_path');
+    t.string('image_name');
     t.uuid('created_by').notNullable().references('id').inTable('users');
     t.timestamps(true, true);
   });
@@ -199,6 +206,7 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 export async function down(knex: Knex): Promise<void> {
+  // Drop tables in reverse order
   await knex.schema.dropTableIfExists('vendor_service_levels');
   await knex.schema.dropTableIfExists('contract_milestones');
   await knex.schema.dropTableIfExists('contract_renewals');
@@ -236,7 +244,8 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.table('cis', (t) => {
     t.dropColumn('vendor_id');
     t.dropColumn('description');
-    t.dropColumn('image_url');
+    t.dropColumn('image_path');
+    t.dropColumn('image_name');
     t.dropColumn('assigned_to_id');
     t.dropColumn('assigned_to_department');
     t.dropColumn('license_key');
