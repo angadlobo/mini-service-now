@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Stack, Paper, Title, Button, Modal, TextInput, Textarea, Select, Group, Text, Badge, Table, ActionIcon, LoadingOverlay, Grid } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconPlus, IconTrash, IconEdit, IconCheck } from '@tabler/icons-react';
-import { api } from '../api/client';
+import api from '../api/client';
 import { usersApi } from '../api/common.api';
 import { useAuthStore } from '../store/auth';
 
