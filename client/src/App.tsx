@@ -75,6 +75,7 @@ import { ServiceForm } from './pages/service-mapping/ServiceForm';
 import { ServiceMap } from './pages/service-mapping/ServiceMap';
 import { SurveyList } from './pages/surveys/SurveyList';
 import { SurveyDesigner } from './pages/surveys/SurveyDesigner';
+import { SurveyDetail } from './pages/surveys/SurveyDetail';
 import { SurveyResults } from './pages/surveys/SurveyResults';
 import { AgentWorkspace } from './pages/workspace/AgentWorkspace';
 import { CostDashboard } from './pages/cost-management/CostDashboard';
@@ -254,6 +255,7 @@ export default function App() {
         {/* Surveys */}
         <Route path="/surveys" element={<SurveyList />} />
         <Route path="/surveys/new" element={<ProtectedRoute roles={['admin', 'itil']}><SurveyDesigner /></ProtectedRoute>} />
+        <Route path="/surveys/:id" element={<SurveyDetail />} />
         <Route path="/surveys/:id/results" element={<SurveyResults />} />
         <Route path="/surveys/:id/edit" element={<ProtectedRoute roles={['admin', 'itil']}><SurveyDesigner /></ProtectedRoute>} />
 
