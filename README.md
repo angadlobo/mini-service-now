@@ -17,11 +17,15 @@ Mini ServiceNow is an open-source ITSM platform that replicates the core functio
 - **CMDB / Asset Management** -- Track configuration items, relationships, and impact analysis
 - **Service Catalog** -- Self-service portal with dynamic request forms and approval routing
 - **Knowledge Base** -- Searchable articles with rich text editing and publish workflows
+- **SLA / OLA Engine** -- Real-time SLA tracking with automatic breach detection, at-risk alerts, and visual compliance dashboard
+- **Major Incident Management** -- Declare major incidents, track timeline, manage stakeholder comms, and auto-escalate related tickets to P1
+- **Inbound Email** -- Automatically convert emails to tickets via provider webhooks (SendGrid/Mailgun-style) with deduplication and threading
+- **Chatbot Integration** -- Multi-platform chatbot (Telegram, Slack, Teams, WhatsApp, Discord) with NLU classification and incident creation via chat
 - **Workflow Automation** -- Event-driven rules that auto-assign, notify, and update records
 - **AI Integration** -- Configurable AI assist (OpenAI, Anthropic, Ollama, or any custom provider) for summarization, resolution suggestions, risk assessment, and more
 - **Form Builder** -- Drag-and-drop custom forms with field validation
 - **Reporting & Export** -- Build custom reports and export to CSV
-- **Webhooks / Integrations** -- Push events to external systems with retry logic
+- **Webhooks / Integrations** -- Push events to external systems with retry logic, plus OAuth2 integrations with 8 external platforms
 - **Notifications** -- In-app, email (SMTP), and Slack notification channels
 - **Role-Based Access Control** -- Admin, ITIL, User, Approver, and Knowledge Manager roles
 
@@ -191,6 +195,40 @@ Open [http://localhost:3000](http://localhost:3000)
 - Auto-created approval records for items requiring approval
 - Request tracking with REQ numbers
 
+### SLA / OLA Engine
+- SLA definitions with structured condition builder (no JSON required)
+- Applies to incidents and problems based on priority, urgency, impact, state
+- Real-time breach tracking with 60-second check interval
+- Dashboard showing compliance metrics, at-risk tickets, and breached SLAs
+- Automatic SLA instance creation on record matching
+- Completion on ticket resolution
+
+### Major Incident Management
+- Declare major incidents from any incident to escalate to P1 and alert stakeholders
+- Timeline tracking of all updates and state changes
+- Stakeholder communication panel for coordinated response
+- Post-incident workflow and resolution tracking
+- Auto-escalation of related incidents to critical priority
+- Dashboard with major incident stats and status overview
+
+### Inbound Email Processing
+- Provider-based webhook ingestion (`POST /api/email/inbound`) from SendGrid/Mailgun/custom senders
+- Automatic email-to-ticket conversion with deduplication (message-id based)
+- Email-to-comment threading (emails matching `Re:[INC-xxxx]` thread as comments)
+- Routing rules with structured condition builder (subject contains, body contains, from domain)
+- Priority-based rule evaluation (highest priority rule wins)
+- Mailbox & account configuration panel
+- Recently-processed log with action tracking
+
+### Chatbot Integration
+- Multi-platform support: Telegram, Slack, Teams, WhatsApp, Discord
+- Slash-command operations: `/incident`, `/change`, `/problem`, `/request`, `/status`, `/link`
+- Admin config page with platform-specific secret tokens (masked in UI)
+- NLU classification engine (ready for AI provider integration)
+- Webhook URLs for each platform with copy-to-clipboard
+- Live session tracking and conversation threading
+- Linked user accounts to associate chat users with system users
+
 ### Knowledge Base
 - PostgreSQL full-text search across titles and body content
 - Category sidebar navigation
@@ -286,6 +324,46 @@ Open [http://localhost:3000](http://localhost:3000)
 | GET/PUT | `/api/problems/:id` | Get/update problem |
 | POST/DELETE | `/api/problems/:id/incidents/:iid` | Link/unlink incident |
 | POST/DELETE | `/api/problems/:id/changes/:cid` | Link/unlink change |
+
+### SLA / OLA
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST | `/api/sla/definitions` | List/create SLA definitions |
+| PUT/DELETE | `/api/sla/definitions/:id` | Update/delete SLA definition |
+| GET | `/api/sla/dashboard` | SLA compliance dashboard |
+| GET | `/api/sla/at-risk` | At-risk tickets (SLA due soon) |
+| GET | `/api/sla/breached` | Breached SLAs |
+
+### Major Incidents
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST | `/api/major-incidents` | List/create major incidents |
+| GET/PUT | `/api/major-incidents/:id` | Get/update major incident |
+| POST | `/api/major-incidents/:id/declare-from-incident` | Escalate incident to major |
+| GET | `/api/major-incidents/:id/timeline` | Timeline of updates |
+| POST | `/api/major-incidents/:id/stakeholder-update` | Send stakeholder communication |
+| POST | `/api/major-incidents/:id/resolve` | Resolve major incident |
+| GET | `/api/major-incidents/dashboard` | Major incident stats & overview |
+
+### Email Processing
+| Method | Endpoint | Description |
+|---|---|---|
+| GET/POST | `/api/email/accounts` | List/create email accounts |
+| DELETE | `/api/email/accounts/:id` | Delete email account |
+| GET/POST | `/api/email/rules` | List/create routing rules |
+| DELETE | `/api/email/rules/:id` | Delete routing rule |
+| GET | `/api/email/processed` | Recently processed emails log |
+| POST | `/api/email/inbound` | Inbound email webhook (public) |
+
+### Chatbot
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/chatbot/config` | Chatbot platform configuration |
+| PUT | `/api/chatbot/config/:platform` | Update platform config |
+| GET | `/api/chatbot/nlu/classify` | Classify user message with NLU |
+| POST | `/api/chatbot/:platform` | Inbound message webhook |
+| GET | `/api/chatbot/sessions` | List chat sessions |
+| GET | `/api/chatbot/sessions/:id` | Get session messages |
 
 ### Releases
 | Method | Endpoint | Description |
@@ -396,6 +474,10 @@ mini-service-now/
 │   │   │   ├── cmdb/               # CI types, CIs, relationships, impact analysis
 │   │   │   ├── catalog/            # Categories, items, requests
 │   │   │   ├── knowledge/          # Articles with full-text search
+│   │   │   ├── sla/                # SLA definitions, dashboard, breach tracking, at-risk alerts
+│   │   │   ├── major-incidents/    # Major incident declare, timeline, stakeholder comms
+│   │   │   ├── email-processing/   # Inbound email webhook, rules, threading, dedup
+│   │   │   ├── chatbot/            # Multi-platform chatbot config, NLU, command handling
 │   │   │   ├── workflows/          # Automation rule CRUD + execution history
 │   │   │   ├── integrations/       # Webhook CRUD + provider integrations + links
 │   │   ├── integrations/            # Provider abstraction layer
@@ -438,16 +520,28 @@ mini-service-now/
     │   │   ├── cmdb/               # CiList, CiForm
     │   │   ├── catalog/            # CatalogBrowse, CatalogItemDetail, CatalogRequestList
     │   │   ├── knowledge/          # KnowledgeSearch, ArticleView, ArticleEditor
+    │   │   ├── sla/                # SlaDashboard, SlaDefinitions
+    │   │   ├── major-incidents/    # MajorIncidentList, MajorIncidentDetail
     │   │   ├── reports/            # ReportList
     │   │   ├── forms/              # FormTemplateList, FormDesigner, FormRenderer
     │   │   ├── workflows/          # WorkflowList
     │   │   ├── approvals/          # MyApprovals
     │   │   └── admin/              # UserAdmin, SystemSettings, AiProviders, AiPrompts,
-    │   │                           # IntegrationList, IntegrationProviders, NotificationChannels
+    │   │                           # IntegrationList, IntegrationProviders, NotificationChannels,
+    │   │                           # ChatbotConfig, EmailProcessing
     │   └── routes/                 # ProtectedRoute
     ├── nginx.conf
     └── Dockerfile / Dockerfile.dev
 ```
+
+---
+
+## UI Improvements & Resilience
+
+- **Error Boundaries**: Graceful error handling for pages that crash. Shows error message + "Retry" and "Go to Dashboard" buttons instead of blanking the entire app
+- **Condition Builder**: Reusable form component for structured condition editing (no JSON required). Used in SLA definitions, email routing rules, and event alerts with field hints
+- **Token Refresh**: Single-flight auth pattern prevents token refresh stampedes. Multiple concurrent 401 errors await one refresh instead of each firing independently
+- **Data Normalization**: Robust handling of API responses that return both object and array shapes (e.g., by_state metrics)
 
 ---
 
@@ -476,9 +570,12 @@ A pluggable provider abstraction layer (`IntegrationProvider` abstract class) en
 - Usage logging with token counts and user feedback
 
 ### SLA Engine
-- SLA definitions match records by condition (e.g., `{ priority: 1 }` -> 60 min)
+- SLA definitions match records by condition (e.g., `{ priority: 1 }` -> 60 min target)
 - SLA instances track start time, planned end, and breach status
 - Automatically applied on incident creation, completed on resolution
+- Event-driven SLA start on record state changes
+- 60-second cron cycle checks for breaches and at-risk alerts
+- Real-time dashboard showing compliance metrics and breached/at-risk tickets
 
 ---
 
@@ -508,3 +605,7 @@ The application seeds itself on first startup with:
 - 6 integration providers (GitHub, Jira, PagerDuty, Teams, Datadog, Grafana) with sample configs
 - 7 integration links connecting external resources to incidents, changes, and problems
 - Sample integration delivery logs for inbound and outbound events
+- 4 SLA definitions (P1/P2/P3 incident response + problem investigation)
+- Chatbot platform configs (Telegram, Slack, Teams, WhatsApp, Discord with sample tokens)
+- Email account & rule configurations with sample mailbox and routing rules
+- Major incident with timeline and stakeholder communications demo

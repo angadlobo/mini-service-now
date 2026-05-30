@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useAuthStore } from './store/auth';
 import { AppShell } from './components/layout/AppShell';
 import { Login } from './pages/Login';
@@ -87,6 +88,7 @@ import { ProjectList } from './pages/projects/ProjectList';
 import { ProjectForm } from './pages/projects/ProjectForm';
 import { TaskBoard } from './pages/projects/TaskBoard';
 import { SlaDashboard } from './pages/sla/SlaDashboard';
+import { SlaDefinitions } from './pages/sla/SlaDefinitions';
 import { AuditDashboard } from './pages/admin/AuditDashboard';
 import { ScheduledJobs } from './pages/admin/ScheduledJobs';
 import { ChatbotConfig } from './pages/admin/ChatbotConfig';
@@ -101,6 +103,7 @@ import { CommandPalette } from './components/common/CommandPalette';
 
 export default function App() {
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+  const location = useLocation();
 
   if (!isAuthenticated) {
     return (
@@ -116,6 +119,7 @@ export default function App() {
     <AppShell>
       <CommandPalette />
       <ChatBot />
+      <ErrorBoundary resetKey={location.pathname}>
       <Routes>
         <Route path="/" element={<Dashboard />} />
 
@@ -266,6 +270,7 @@ export default function App() {
 
         {/* SLA */}
         <Route path="/sla" element={<SlaDashboard />} />
+        <Route path="/sla/definitions" element={<ProtectedRoute roles={['admin']}><SlaDefinitions /></ProtectedRoute>} />
 
         {/* Analytics */}
         <Route path="/analytics" element={<AnalyticsDashboard />} />
@@ -295,6 +300,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </ErrorBoundary>
     </AppShell>
   );
 }

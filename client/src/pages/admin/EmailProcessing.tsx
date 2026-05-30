@@ -2,14 +2,21 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Stack, Title, Text, Paper, Group, Button, TextInput, PasswordInput, Table, Badge,
-  Modal, Select, ActionIcon, Tooltip, CopyButton, Box, ThemeIcon, Code,
+  Modal, Select, ActionIcon, Tooltip, CopyButton, Box, ThemeIcon, Code, NumberInput,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   IconMail, IconPlus, IconTrash, IconCopy, IconCheck, IconFilter, IconInbox,
 } from '@tabler/icons-react';
 import { emailProcessingApi } from '../../api/email-processing.api';
+import { ConditionBuilder, ConditionField } from '../../components/common/ConditionBuilder';
 import dayjs from 'dayjs';
+
+const EMAIL_CONDITION_FIELDS: ConditionField[] = [
+  { key: 'subject_contains', label: 'Subject', operatorLabel: 'contains', placeholder: 'e.g. invoice', hint: 'Matches when the email subject contains this text (case-insensitive).' },
+  { key: 'body_contains', label: 'Body', operatorLabel: 'contains', placeholder: 'e.g. urgent', hint: 'Matches when the email body contains this text.' },
+  { key: 'from_domain', label: 'From address', operatorLabel: 'ends with', placeholder: '@vendor.com', hint: 'Matches when the sender address ends with this, e.g. @vendor.com.' },
+];
 
 const ACTION_COLOR: Record<string, string> = {
   create_incident: 'blue', add_comment: 'teal', ignore: 'gray', create_request: 'violet', duplicate: 'yellow',
@@ -21,7 +28,7 @@ export function EmailProcessing() {
   const [acctOpen, setAcctOpen] = useState(false);
   const [ruleOpen, setRuleOpen] = useState(false);
   const [acct, setAcct] = useState({ address: '', host: '', port: 993, username: '', password: '' });
-  const [rule, setRule] = useState({ email_account_id: '', priority: 0, subject_contains: '', from_domain: '', action: 'create_incident' });
+  const [rule, setRule] = useState({ email_account_id: '', priority: 0, conditions: {} as Record<string, any>, action: 'create_incident' });
 
   const { data: accounts } = useQuery({ queryKey: ['email-accounts'], queryFn: emailProcessingApi.listAccounts });
   const { data: rules } = useQuery({ queryKey: ['email-rules'], queryFn: () => emailProcessingApi.listRules() });
@@ -39,7 +46,7 @@ export function EmailProcessing() {
       email_account_id: rule.email_account_id,
       priority: rule.priority,
       action: rule.action,
-      conditions: { ...(rule.subject_contains ? { subject_contains: rule.subject_contains } : {}), ...(rule.from_domain ? { from_domain: rule.from_domain } : {}) },
+      conditions: rule.conditions,
     }),
     onSuccess: () => { notifications.show({ title: 'Saved', message: 'Rule added', color: 'green' }); setRuleOpen(false); qc.invalidateQueries({ queryKey: ['email-rules'] }); },
     onError: (e: any) => notifications.show({ title: 'Error', message: e.response?.data?.error || 'Failed', color: 'red' }),
@@ -100,7 +107,7 @@ export function EmailProcessing() {
       {/* Rules */}
       <Group justify="space-between" mt="sm">
         <Title order={4}>Routing Rules</Title>
-        <Button size="xs" variant="light" leftSection={<IconFilter size={14} />} disabled={!accounts?.length} onClick={() => { setRule({ ...rule, email_account_id: accounts?.[0]?.id || '' }); setRuleOpen(true); }}>Add rule</Button>
+        <Button size="xs" variant="light" leftSection={<IconFilter size={14} />} disabled={!accounts?.length} onClick={() => { setRule({ email_account_id: accounts?.[0]?.id || '', priority: 0, conditions: {}, action: 'create_incident' }); setRuleOpen(true); }}>Add rule</Button>
       </Group>
       <Paper withBorder radius="md">
         <Table highlightOnHover>
@@ -158,13 +165,21 @@ export function EmailProcessing() {
       {/* Add rule modal */}
       <Modal opened={ruleOpen} onClose={() => setRuleOpen(false)} title="Add Routing Rule">
         <Stack>
-          <Select label="Mailbox" data={(accounts || []).map((a: any) => ({ value: a.id, label: a.address }))} value={rule.email_account_id} onChange={(v) => setRule({ ...rule, email_account_id: v || '' })} />
-          <TextInput label="Priority" type="number" value={rule.priority} onChange={(e) => setRule({ ...rule, priority: Number(e.currentTarget.value) })} />
-          <TextInput label="Subject contains" placeholder="(optional)" value={rule.subject_contains} onChange={(e) => setRule({ ...rule, subject_contains: e.currentTarget.value })} />
-          <TextInput label="From domain ends with" placeholder="e.g. @vendor.com (optional)" value={rule.from_domain} onChange={(e) => setRule({ ...rule, from_domain: e.currentTarget.value })} />
-          <Select label="Action" data={[
+          <Select label="Mailbox" description="Which inbox this rule applies to" data={(accounts || []).map((a: any) => ({ value: a.id, label: a.address }))} value={rule.email_account_id} onChange={(v) => setRule({ ...rule, email_account_id: v || '' })} />
+          <NumberInput label="Priority" description="Higher numbers are evaluated first; the first matching rule wins" value={rule.priority} onChange={(v) => setRule({ ...rule, priority: Number(v) || 0 })} />
+          <Box>
+            <Text size="sm" fw={500} mb={4}>When the email matches</Text>
+            <Text size="xs" c="dimmed" mb={8}>All conditions must match. Leave empty to apply to every email.</Text>
+            <ConditionBuilder
+              fields={EMAIL_CONDITION_FIELDS}
+              value={rule.conditions}
+              onChange={(conditions) => setRule({ ...rule, conditions })}
+              emptyLabel="Applies to every email to this mailbox."
+            />
+          </Box>
+          <Select label="Then" description="What to do with matching email" data={[
             { value: 'create_incident', label: 'Create incident' },
-            { value: 'add_comment', label: 'Add comment (if threaded)' },
+            { value: 'add_comment', label: 'Add comment (if it references a ticket)' },
             { value: 'ignore', label: 'Ignore' },
           ]} value={rule.action} onChange={(v) => setRule({ ...rule, action: v || 'create_incident' })} />
           <Group justify="flex-end"><Button variant="default" onClick={() => setRuleOpen(false)}>Cancel</Button><Button loading={createRule.isPending} disabled={!rule.email_account_id} onClick={() => createRule.mutate()}>Save</Button></Group>

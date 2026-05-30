@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Stack, Title, TextInput, Textarea, Select, NumberInput, Button, Modal,
-  Badge, Group, Paper, ActionIcon, Text, Loader, SimpleGrid,
+  Stack, Title, TextInput, Select, NumberInput, Button, Modal,
+  Badge, Group, Paper, ActionIcon, Text, Loader, SimpleGrid, Box, Divider,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconPencil, IconTrash, IconPlus } from '@tabler/icons-react';
 import { appEngineApi } from '../../../api/app-engine.api';
+import { ConditionBuilder, ConditionField } from '../../../components/common/ConditionBuilder';
 
 const WIDGET_TYPES = [
   { value: 'stat_card', label: 'Stat Card' },
@@ -22,6 +23,18 @@ const AGGREGATE_TYPES = [
   { value: 'count', label: 'Count' },
   { value: 'sum', label: 'Sum' },
   { value: 'avg', label: 'Average' },
+];
+
+const COMMON_FILTER_FIELDS: ConditionField[] = [
+  { key: 'state', label: 'State', type: 'select', operatorLabel: 'is', options: [
+    { value: 'new', label: 'New' }, { value: 'in_progress', label: 'In Progress' }, { value: 'on_hold', label: 'On Hold' }, { value: 'resolved', label: 'Resolved' }, { value: 'closed', label: 'Closed' },
+  ], hint: 'Filter by record state.' },
+  { key: 'priority', label: 'Priority', type: 'select', operatorLabel: 'is', options: [
+    { value: '1', label: '1 — Critical' }, { value: '2', label: '2 — High' }, { value: '3', label: '3 — Moderate' }, { value: '4', label: '4 — Low' }, { value: '5', label: '5 — Planning' },
+  ], hint: 'Filter by priority level.' },
+  { key: 'assigned_to_id', label: 'Assigned To', type: 'text', operatorLabel: 'is', placeholder: 'User ID', hint: 'Filter by assigned user.' },
+  { key: 'created_after', label: 'Created After', type: 'text', operatorLabel: 'is after', placeholder: 'YYYY-MM-DD', hint: 'Filter records created on/after this date.' },
+  { key: 'created_before', label: 'Created Before', type: 'text', operatorLabel: 'is before', placeholder: 'YYYY-MM-DD', hint: 'Filter records created on/before this date.' },
 ];
 
 interface Widget {
@@ -71,7 +84,6 @@ export function DashboardDesigner() {
   // Widget modal state
   const [widgetModal, setWidgetModal] = useState(false);
   const [widgetForm, setWidgetForm] = useState<Omit<Widget, 'id'>>({ ...emptyWidget });
-  const [filtersJson, setFiltersJson] = useState('{}');
   const [columnsStr, setColumnsStr] = useState('');
   const [editWidgetId, setEditWidgetId] = useState<string | null>(null);
 
@@ -111,7 +123,6 @@ export function DashboardDesigner() {
   const openAddWidget = () => {
     setEditWidgetId(null);
     setWidgetForm({ ...emptyWidget });
-    setFiltersJson('{}');
     setColumnsStr('');
     setWidgetModal(true);
   };
@@ -131,21 +142,18 @@ export function DashboardDesigner() {
       color: widget.color || '',
       icon: widget.icon || '',
     });
-    setFiltersJson(JSON.stringify(widget.filters || {}, null, 2));
     setColumnsStr((widget.columns || []).join(', '));
     setWidgetModal(true);
   };
 
   const saveWidget = () => {
-    let filters: Record<string, unknown> = {};
-    try { filters = JSON.parse(filtersJson); } catch { /* keep empty */ }
     const cols = columnsStr.split(',').map((s) => s.trim()).filter(Boolean);
 
     const widgetData: Widget = {
       id: editWidgetId || nextWidgetId(),
       ...widgetForm,
       columns: cols,
-      filters,
+      filters: widgetForm.filters || {},
     };
 
     if (editWidgetId) {
@@ -284,13 +292,17 @@ export function DashboardDesigner() {
             />
           )}
 
-          <Textarea
-            label="Filters (JSON)"
-            minRows={3}
-            autosize
-            value={filtersJson}
-            onChange={(e) => setFiltersJson(e.currentTarget.value)}
-          />
+          <Divider />
+          <Box>
+            <Text size="sm" fw={500} mb={4}>Filters</Text>
+            <Text size="xs" c="dimmed" mb={8}>Optionally filter which records appear in this widget. Leave empty for all records.</Text>
+            <ConditionBuilder
+              fields={COMMON_FILTER_FIELDS}
+              value={widgetForm.filters || {}}
+              onChange={(filters) => setWF('filters', filters)}
+              emptyLabel="No filters — shows all records."
+            />
+          </Box>
 
           <Group grow>
             <TextInput label="Color" placeholder="e.g. blue, #4c6ef5" value={widgetForm.color} onChange={(e) => setWF('color', e.currentTarget.value)} />

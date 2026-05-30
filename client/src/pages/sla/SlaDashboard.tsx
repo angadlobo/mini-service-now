@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { Stack, Title, SimpleGrid, Text, Group, Badge, Paper, Progress, Table, ThemeIcon, Loader } from '@mantine/core';
-import { IconTarget, IconAlertTriangle, IconCheck, IconX, IconClock, IconActivity } from '@tabler/icons-react';
+import { Stack, Title, SimpleGrid, Text, Group, Badge, Paper, Progress, Table, ThemeIcon, Loader, Button } from '@mantine/core';
+import { IconTarget, IconAlertTriangle, IconCheck, IconX, IconClock, IconActivity, IconSettings } from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
 import { slaApi } from '../../api/sla.api';
 import dayjs from 'dayjs';
 
@@ -30,6 +31,7 @@ function priorityColor(p: number | null) {
 }
 
 export function SlaDashboard() {
+  const navigate = useNavigate();
   const { data: dash, isLoading } = useQuery({ queryKey: ['sla-dashboard'], queryFn: () => slaApi.getDashboard(), refetchInterval: 30_000 });
   const { data: atRisk } = useQuery({ queryKey: ['sla-at-risk'], queryFn: slaApi.getAtRisk, refetchInterval: 30_000 });
   const { data: breached } = useQuery({ queryKey: ['sla-breached'], queryFn: slaApi.getBreached, refetchInterval: 30_000 });
@@ -51,7 +53,10 @@ export function SlaDashboard() {
     <Stack className="fade-in">
       <Group justify="space-between">
         <Title order={2} className="page-title">SLA / OLA Dashboard</Title>
-        <Badge size="lg" variant="filled" color={rateColor}>{rate}% compliant</Badge>
+        <Group>
+          <Badge size="lg" variant="filled" color={rateColor}>{rate}% compliant</Badge>
+          <Button variant="light" leftSection={<IconSettings size={16} />} onClick={() => navigate('/sla/definitions')}>Manage Definitions</Button>
+        </Group>
       </Group>
 
       <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">

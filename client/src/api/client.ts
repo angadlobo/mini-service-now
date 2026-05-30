@@ -14,16 +14,34 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Single-flight refresh: when many requests 401 at once (token just expired),
+// they all await ONE refresh call instead of each firing their own.
+let refreshPromise: Promise<string> | null = null;
+
+function refreshAccessToken(): Promise<string> {
+  if (!refreshPromise) {
+    refreshPromise = axios
+      .post('/api/auth/refresh', {}, { withCredentials: true })
+      .then(({ data }) => {
+        useAuthStore.getState().setAuth(data.user, data.accessToken);
+        return data.accessToken as string;
+      })
+      .finally(() => { refreshPromise = null; });
+  }
+  return refreshPromise;
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Don't try to refresh the refresh call itself, and only retry once.
+    const isAuthCall = originalRequest?.url?.includes('/auth/refresh') || originalRequest?.url?.includes('/auth/login');
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthCall) {
       originalRequest._retry = true;
       try {
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
-        useAuthStore.getState().setAuth(data.user, data.accessToken);
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        const accessToken = await refreshAccessToken();
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch {
         useAuthStore.getState().logout();

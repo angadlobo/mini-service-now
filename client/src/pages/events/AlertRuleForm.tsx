@@ -9,6 +9,15 @@ import { notifications } from '@mantine/notifications';
 import { IconDeviceFloppy, IconArrowLeft } from '@tabler/icons-react';
 import { alertRulesApi } from '../../api/events.api';
 import { usersApi } from '../../api/common.api';
+import { ConditionBuilder, ConditionField } from '../../components/common/ConditionBuilder';
+
+const EVENT_CONDITION_FIELDS: ConditionField[] = [
+  { key: 'severity', label: 'Severity', type: 'select', operatorLabel: 'is', options: [
+    { value: 'critical', label: 'Critical' }, { value: 'major', label: 'Major' }, { value: 'minor', label: 'Minor' }, { value: 'warning', label: 'Warning' }, { value: 'info', label: 'Info' },
+  ], hint: 'Match events of this severity.' },
+  { key: 'node', label: 'Node', operatorLabel: 'is', placeholder: 'e.g. web-prod-01', hint: 'Match events from a specific host/node.' },
+  { key: 'metric_name', label: 'Metric', operatorLabel: 'is', placeholder: 'e.g. cpu_usage' },
+];
 
 export function AlertRuleForm() {
   const { id } = useParams();
@@ -20,8 +29,8 @@ export function AlertRuleForm() {
     name: '',
     source: 'monitoring',
     enabled: true,
-    conditions: '{}',
-    actions: '{}',
+    conditions: {} as Record<string, any>,
+    createIncident: false,
     severity_override: '',
     assignment_group: '',
     cooldown_minutes: 5 as string | number,
@@ -40,12 +49,14 @@ export function AlertRuleForm() {
 
   useEffect(() => {
     if (rule) {
+      const conditions = rule.conditions ? (typeof rule.conditions === 'string' ? JSON.parse(rule.conditions || '{}') : rule.conditions) : {};
+      const actions = rule.actions ? (typeof rule.actions === 'string' ? JSON.parse(rule.actions || '{}') : rule.actions) : {};
       setForm({
         name: rule.name || '',
         source: rule.source || 'monitoring',
         enabled: rule.enabled ?? true,
-        conditions: rule.conditions ? (typeof rule.conditions === 'string' ? rule.conditions : JSON.stringify(rule.conditions, null, 2)) : '{}',
-        actions: rule.actions ? (typeof rule.actions === 'string' ? rule.actions : JSON.stringify(rule.actions, null, 2)) : '{}',
+        conditions,
+        createIncident: !!actions.create_incident,
         severity_override: rule.severity_override || '',
         assignment_group: rule.assignment_group || rule.assignment_group_id || '',
         cooldown_minutes: rule.cooldown_minutes ?? 5,
@@ -55,27 +66,12 @@ export function AlertRuleForm() {
 
   const save = useMutation({
     mutationFn: () => {
-      let parsedConditions: any;
-      let parsedActions: any;
-
-      try {
-        parsedConditions = JSON.parse(form.conditions);
-      } catch {
-        throw new Error('Invalid JSON in conditions field');
-      }
-
-      try {
-        parsedActions = JSON.parse(form.actions);
-      } catch {
-        throw new Error('Invalid JSON in actions field');
-      }
-
       const payload: any = {
         name: form.name,
         source: form.source,
         enabled: form.enabled,
-        conditions: parsedConditions,
-        actions: parsedActions,
+        conditions: form.conditions,
+        actions: { create_incident: form.createIncident },
         severity_override: form.severity_override || null,
         assignment_group: form.assignment_group || null,
         cooldown_minutes: form.cooldown_minutes ? Number(form.cooldown_minutes) : 5,
@@ -136,22 +132,22 @@ export function AlertRuleForm() {
                 </Grid.Col>
               </Grid>
 
-              <Textarea
-                label="Conditions (JSON)"
-                description="Define the conditions that trigger this alert rule"
-                minRows={4}
-                value={form.conditions}
-                onChange={(e) => setForm({ ...form, conditions: e.currentTarget.value })}
-                styles={{ input: { fontFamily: 'monospace', fontSize: '0.85rem' } }}
-              />
+              <div>
+                <Text size="sm" fw={500} mb={4}>Match conditions</Text>
+                <Text size="xs" c="dimmed" mb={8}>Narrow which events from this source the rule applies to. Leave empty to match all events from the source.</Text>
+                <ConditionBuilder
+                  fields={EVENT_CONDITION_FIELDS}
+                  value={form.conditions}
+                  onChange={(conditions) => setForm({ ...form, conditions })}
+                  emptyLabel="Matches all events from the selected source."
+                />
+              </div>
 
-              <Textarea
-                label="Actions (JSON)"
-                description="Define the actions to perform when conditions are met"
-                minRows={4}
-                value={form.actions}
-                onChange={(e) => setForm({ ...form, actions: e.currentTarget.value })}
-                styles={{ input: { fontFamily: 'monospace', fontSize: '0.85rem' } }}
+              <Switch
+                label="Auto-create incident for critical/major events"
+                description="When a matching event is critical or major, open an incident automatically"
+                checked={form.createIncident}
+                onChange={(e) => setForm({ ...form, createIncident: e.currentTarget.checked })}
               />
 
               <Grid>

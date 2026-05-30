@@ -100,22 +100,35 @@ function HorizontalBarChart({ title, data }: { title: string; data: BarDataItem[
 }
 
 // ── Stats Computation Helpers ────────────────────────
+/**
+ * Normalise a `by_state`/`by_priority` value into an array of { state/priority, count }.
+ * The API returns these as an object map (e.g. { new: 18, resolved: 4 }), but older
+ * code expected an array — accept both shapes so the dashboard never crashes.
+ */
+function toCountArray(value: any, key: 'state' | 'priority' = 'state'): Array<Record<string, any>> {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== 'object') return [];
+  return Object.entries(value).map(([k, v]) => ({ [key]: k, count: v }));
+}
+
 function computeKPIs(stats: any) {
   const incidents = stats?.incidents || {};
   const changes = stats?.changes || {};
-  const problems = stats?.problems || {};
+
+  const incidentStates = toCountArray(incidents.by_state);
+  const changeStates = toCountArray(changes.by_state);
 
   // Open incident count
-  const openIncidents = (incidents.by_state || [])
+  const openIncidents = incidentStates
     .filter((s: any) => s.state !== 'closed' && s.state !== 'resolved' && s.state !== 'cancelled')
     .reduce((sum: number, s: any) => sum + Number(s.count || 0), 0);
 
   // Total incidents
-  const totalIncidents = (incidents.by_state || [])
+  const totalIncidents = incidentStates
     .reduce((sum: number, s: any) => sum + Number(s.count || 0), 0);
 
   // Resolved/closed incidents
-  const resolvedIncidents = (incidents.by_state || [])
+  const resolvedIncidents = incidentStates
     .filter((s: any) => s.state === 'closed' || s.state === 'resolved')
     .reduce((sum: number, s: any) => sum + Number(s.count || 0), 0);
 
@@ -123,12 +136,12 @@ function computeKPIs(stats: any) {
   const mttrHours = totalIncidents > 0 ? Math.round((resolvedIncidents / Math.max(totalIncidents, 1)) * 48) : 0;
 
   // Change success rate
-  const totalChanges = (changes.by_state || [])
+  const totalChanges = changeStates
     .reduce((sum: number, s: any) => sum + Number(s.count || 0), 0);
-  const completedChanges = (changes.by_state || [])
+  const completedChanges = changeStates
     .filter((s: any) => s.state === 'completed')
     .reduce((sum: number, s: any) => sum + Number(s.count || 0), 0);
-  const failedChanges = (changes.by_state || [])
+  const failedChanges = changeStates
     .filter((s: any) => s.state === 'failed')
     .reduce((sum: number, s: any) => sum + Number(s.count || 0), 0);
   const changeSuccessRate = totalChanges > 0
@@ -200,10 +213,10 @@ export function AnalyticsDashboard() {
 
   const kpis = computeKPIs(stats);
 
-  const incidentsByPriority = buildBarData(stats?.incidents?.by_priority || [], PRIORITY_COLORS);
-  const incidentsByState = buildBarData(stats?.incidents?.by_state || [], INCIDENT_STATE_COLORS);
-  const changesByState = buildBarData(stats?.changes?.by_state || [], CHANGE_STATE_COLORS);
-  const problemsByState = buildBarData(stats?.problems?.by_state || [], PROBLEM_STATE_COLORS);
+  const incidentsByPriority = buildBarData(toCountArray(stats?.incidents?.by_priority, 'priority'), PRIORITY_COLORS);
+  const incidentsByState = buildBarData(toCountArray(stats?.incidents?.by_state), INCIDENT_STATE_COLORS);
+  const changesByState = buildBarData(toCountArray(stats?.changes?.by_state), CHANGE_STATE_COLORS);
+  const problemsByState = buildBarData(toCountArray(stats?.problems?.by_state), PROBLEM_STATE_COLORS);
 
   return (
     <Stack className="fade-in">

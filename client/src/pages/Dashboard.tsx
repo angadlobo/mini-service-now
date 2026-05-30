@@ -2,8 +2,9 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Title, Text, Paper, Stack, Group, SimpleGrid, Box, Button, Skeleton,
-  ActionIcon, Modal, Select, TextInput, NumberInput, JsonInput, Tooltip,
+  ActionIcon, Modal, Select, TextInput, NumberInput, Tooltip, Divider,
 } from '@mantine/core';
+import { ConditionBuilder, ConditionField } from '../components/common/ConditionBuilder';
 import {
   IconEdit, IconCheck, IconPlus, IconTrash, IconGripVertical,
   IconChartBar, IconChartPie, IconChartLine, IconTable, IconHash, IconReportAnalytics,
@@ -293,6 +294,18 @@ const WIDGET_TYPES = [
   { value: 'report_chart', label: 'Report Chart', icon: IconReportAnalytics },
 ];
 
+const COMMON_FILTER_FIELDS: ConditionField[] = [
+  { key: 'state', label: 'State', type: 'select', operatorLabel: 'is', options: [
+    { value: 'new', label: 'New' }, { value: 'in_progress', label: 'In Progress' }, { value: 'on_hold', label: 'On Hold' }, { value: 'resolved', label: 'Resolved' }, { value: 'closed', label: 'Closed' },
+  ], hint: 'Filter by record state.' },
+  { key: 'priority', label: 'Priority', type: 'select', operatorLabel: 'is', options: [
+    { value: '1', label: '1 — Critical' }, { value: '2', label: '2 — High' }, { value: '3', label: '3 — Moderate' }, { value: '4', label: '4 — Low' }, { value: '5', label: '5 — Planning' },
+  ], hint: 'Filter by priority level.' },
+  { key: 'assigned_to_id', label: 'Assigned To', type: 'text', operatorLabel: 'is', placeholder: 'User ID', hint: 'Filter by assigned user.' },
+  { key: 'created_after', label: 'Created After', type: 'text', operatorLabel: 'is after', placeholder: 'YYYY-MM-DD', hint: 'Filter records created on/after this date.' },
+  { key: 'created_before', label: 'Created Before', type: 'text', operatorLabel: 'is before', placeholder: 'YYYY-MM-DD', hint: 'Filter records created on/before this date.' },
+];
+
 function AddWidgetModal({ opened, onClose, onAdd }: {
   opened: boolean;
   onClose: () => void;
@@ -306,7 +319,7 @@ function AddWidgetModal({ opened, onClose, onAdd }: {
   const [groupBy, setGroupBy] = useState('');
   const [colSpan, setColSpan] = useState<number>(1);
   const [color, setColor] = useState('blue');
-  const [filtersJson, setFiltersJson] = useState('{}');
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [columns, setColumns] = useState('');
   const [reportId, setReportId] = useState<string | null>(null);
 
@@ -319,9 +332,6 @@ function AddWidgetModal({ opened, onClose, onAdd }: {
   const reports = reportsData?.data || [];
 
   const handleAdd = () => {
-    let filters: Record<string, unknown> = {};
-    try { filters = JSON.parse(filtersJson); } catch { /* ignore */ }
-
     const widget: WidgetConfig = {
       id: crypto.randomUUID(),
       type: widgetType as WidgetConfig['type'],
@@ -347,7 +357,7 @@ function AddWidgetModal({ opened, onClose, onAdd }: {
     setGroupBy('');
     setColSpan(1);
     setColor('blue');
-    setFiltersJson('{}');
+    setFilters({});
     setColumns('');
     setReportId(null);
     onClose();
@@ -421,7 +431,19 @@ function AddWidgetModal({ opened, onClose, onAdd }: {
         />
 
         {!isReport && (
-          <JsonInput label="Filters (JSON)" value={filtersJson} onChange={setFiltersJson} minRows={2} formatOnBlur autosize />
+          <>
+            <Divider />
+            <Box>
+              <Text size="sm" fw={500} mb={4}>Filters</Text>
+              <Text size="xs" c="dimmed" mb={8}>Optionally filter which records appear in this widget. Leave empty for all records.</Text>
+              <ConditionBuilder
+                fields={COMMON_FILTER_FIELDS}
+                value={filters}
+                onChange={setFilters}
+                emptyLabel="No filters — shows all records."
+              />
+            </Box>
+          </>
         )}
 
         <Button onClick={handleAdd} fullWidth mt="sm">Add Widget</Button>

@@ -134,8 +134,7 @@ export class PortalService {
           'sc_catalog_items.name as item_name',
           'sc_catalog_items.short_description',
         )
-        .leftJoin('sc_req_items', 'sc_req_items.request_id', 'sc_requests.id')
-        .leftJoin('sc_catalog_items', 'sc_catalog_items.id', 'sc_req_items.item_id')
+        .leftJoin('sc_catalog_items', 'sc_catalog_items.id', 'sc_requests.catalog_item_id')
         .where('sc_requests.requested_by', userId)
         .orderBy('sc_requests.created_at', 'desc')
         .limit(100),

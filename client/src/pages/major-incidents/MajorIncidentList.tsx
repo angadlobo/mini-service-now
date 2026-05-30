@@ -8,6 +8,7 @@ import { notifications } from '@mantine/notifications';
 import { IconAlertOctagon, IconPlus, IconFlag, IconActivity, IconCheck } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { majorIncidentsApi, MajorIncident } from '../../api/major-incidents.api';
+import { incidentsApi } from '../../api/incidents.api';
 import dayjs from 'dayjs';
 
 const SEVERITY_COLOR: Record<string, string> = { sev1: 'red', sev2: 'orange', sev3: 'yellow' };
@@ -42,6 +43,7 @@ export function MajorIncidentList() {
 
   const { data: dash } = useQuery({ queryKey: ['mi-dashboard'], queryFn: majorIncidentsApi.getDashboard, refetchInterval: 30_000 });
   const { data: list, isLoading } = useQuery({ queryKey: ['major-incidents'], queryFn: () => majorIncidentsApi.list(), refetchInterval: 30_000 });
+  const { data: incidents } = useQuery({ queryKey: ['incidents-for-major'], queryFn: () => incidentsApi.list({ limit: 100 }), enabled: declareOpen });
 
   const declare = useMutation({
     mutationFn: () => majorIncidentsApi.declare({
@@ -112,14 +114,21 @@ export function MajorIncidentList() {
         </>
       )}
 
-      <Modal opened={declareOpen} onClose={() => setDeclareOpen(false)} title="Declare Major Incident" size="lg">
+      <Modal opened={declareOpen} onClose={() => { setDeclareOpen(false); setForm({ incident_id: '', title: '', severity: 'sev1', business_impact: '' }); }} title="Declare Major Incident" size="lg">
         <Stack>
-          <TextInput
+          <Select
             label="Trigger Incident (number or ID)"
             description="Optional — links a major incident to an existing incident and escalates it to P1"
-            placeholder="e.g. INC1001"
+            placeholder="Search by incident number or title..."
+            searchable
+            clearable
             value={form.incident_id}
-            onChange={(e) => setForm({ ...form, incident_id: e.currentTarget.value })}
+            onChange={(v) => setForm({ ...form, incident_id: v || '' })}
+            data={(incidents?.rows || []).map((inc: any) => ({
+              value: inc.id,
+              label: `${inc.number} — ${inc.short_description}`,
+              searchValue: `${inc.number} ${inc.short_description}`,
+            }))}
           />
           <TextInput
             label="Title"
