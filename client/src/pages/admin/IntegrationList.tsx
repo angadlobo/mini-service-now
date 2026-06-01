@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Container, Title, Table, Button, Modal, TextInput, Select, MultiSelect,
-  Switch, Badge, Tabs, Group, Stack, Paper, Text, Code,
+  Switch, Badge, Tabs, Group, Stack, Paper, Text, Code, Tooltip, ActionIcon,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconEdit, IconTrash, IconTestPipe, IconList, IconPlug } from '@tabler/icons-react';
+import { IconPlus, IconEdit, IconTrash, IconTestPipe, IconList, IconPlug, IconHelp } from '@tabler/icons-react';
 import { integrationsApi } from '../../api/common.api';
 import { useAuthStore } from '../../store/auth';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +32,54 @@ const EVENT_OPTIONS = [
   { value: 'ci.updated', label: 'CI Updated' },
 ];
 
+const PROVIDER_HELP: Record<string, { description: string; setup: string; example: string }> = {
+  slack: {
+    description: 'Send ServiceNow events to Slack channels via webhooks. Get real-time notifications about incidents, changes, and problems.',
+    setup: '1. Get a webhook URL from Slack (api.slack.com/apps)\n2. Create a new integration and paste the webhook URL\n3. Select which events to subscribe to\n4. Test the connection\n5. Messages will appear in your chosen Slack channel',
+    example: '🔴 New Incident: Database Down - Urgency: High',
+  },
+  github: {
+    description: 'Create and update GitHub issues automatically when incidents or changes occur. Track work across ServiceNow and GitHub.',
+    setup: '1. Generate a GitHub token (settings/tokens)\n2. Add token and repository info\n3. Select incident/change events\n4. Issues will auto-create in your GitHub repo',
+    example: 'GitHub Issue #42 created: Critical Database Connection Error',
+  },
+  gitlab: {
+    description: 'Sync incidents and changes with GitLab issues. Keep your development and operations teams in sync.',
+    setup: '1. Get GitLab token from account settings\n2. Add token, project ID, and namespace\n3. Select events to sync\n4. Test and activate',
+    example: 'GitLab Issue created in project',
+  },
+  jira: {
+    description: 'Create Jira tickets automatically when incidents occur. Link ServiceNow incidents to Jira tickets.',
+    setup: '1. Create API token in Jira\n2. Add Jira instance URL and credentials\n3. Configure project and issue type\n4. Select incident events\n5. Tickets auto-create in Jira',
+    example: 'Jira Ticket PROJ-123 created: Email server down',
+  },
+  pagerduty: {
+    description: 'Trigger PagerDuty incidents for critical ServiceNow events. Escalate to on-call teams automatically.',
+    setup: '1. Get PagerDuty API key\n2. Add key and service ID\n3. Map incident urgency to PagerDuty severity\n4. Select trigger events\n5. Incidents auto-escalate to on-call',
+    example: 'PagerDuty incident triggered for critical database issue',
+  },
+  teams: {
+    description: 'Send notifications to Microsoft Teams channels. Keep your team informed about incidents and changes.',
+    setup: '1. Create Teams webhook connector\n2. Paste webhook URL\n3. Select events\n4. Test and save\n5. Messages appear in Teams channel',
+    example: 'Teams notification: High priority incident assigned to you',
+  },
+  'azure-devops': {
+    description: 'Create work items in Azure DevOps. Link ServiceNow incidents to Azure DevOps stories and bugs.',
+    setup: '1. Get Azure DevOps token\n2. Add token and project URL\n3. Select work item type\n4. Choose trigger events\n5. Work items auto-create',
+    example: 'Azure DevOps work item created: API Performance Degradation',
+  },
+  datadog: {
+    description: 'Send events to Datadog. Correlate infrastructure alerts with ServiceNow incidents.',
+    setup: '1. Get Datadog API key\n2. Add API key and region\n3. Choose events\n4. Events appear in Datadog timeline',
+    example: 'Datadog event: New incident created for monitoring alert',
+  },
+  grafana: {
+    description: 'Send annotations to Grafana. Mark incidents on your monitoring dashboards.',
+    setup: '1. Get Grafana API token\n2. Add token and Grafana URL\n3. Select events\n4. Annotations appear on dashboards',
+    example: 'Grafana annotation: Incident marked on dashboard at time of creation',
+  },
+};
+
 const emptyForm = {
   name: '',
   type: 'webhook',
@@ -54,6 +102,7 @@ export function IntegrationList() {
   const [logsId, setLogsId] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
+  const [helpProvider, setHelpProvider] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['integrations', page],
@@ -146,7 +195,22 @@ export function IntegrationList() {
   const rows = (data?.data || []).map((r) => (
     <Table.Tr key={r.id}>
       <Table.Td>{r.name}</Table.Td>
-      <Table.Td><Badge variant="light">{r.type || 'webhook'}</Badge></Table.Td>
+      <Table.Td>
+        <Group gap={4}>
+          <Badge variant="light">{r.type === 'provider' ? r.provider : (r.type || 'webhook')}</Badge>
+          {r.type === 'provider' && r.provider && PROVIDER_HELP[r.provider.toLowerCase()] && (
+            <Tooltip label="Click for help">
+              <ActionIcon
+                size="xs"
+                variant="subtle"
+                onClick={() => setHelpProvider(r.provider.toLowerCase())}
+              >
+                <IconHelp size={14} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+        </Group>
+      </Table.Td>
       <Table.Td><Text size="sm" truncate maw={250}>{r.url}</Text></Table.Td>
       <Table.Td><Badge color={r.active ? 'green' : 'gray'}>{r.active ? 'Active' : 'Inactive'}</Badge></Table.Td>
       <Table.Td>{(r.events || []).length} events</Table.Td>
@@ -277,6 +341,29 @@ export function IntegrationList() {
             </Table>
           </Paper>
         </Modal>
+
+        {/* Help Modal */}
+        {helpProvider && PROVIDER_HELP[helpProvider] && (
+          <Modal opened={!!helpProvider} onClose={() => setHelpProvider(null)} title={`${helpProvider.charAt(0).toUpperCase() + helpProvider.slice(1)} Integration Help`} size="lg">
+            <Stack gap="md">
+              <div>
+                <Text fw={600} mb="xs">What it does</Text>
+                <Text size="sm">{PROVIDER_HELP[helpProvider].description}</Text>
+              </div>
+              <div>
+                <Text fw={600} mb="xs">How to set it up</Text>
+                <Text size="sm" component="pre" style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+                  {PROVIDER_HELP[helpProvider].setup}
+                </Text>
+              </div>
+              <div>
+                <Text fw={600} mb="xs">Example notification</Text>
+                <Text size="sm" c="blue">{PROVIDER_HELP[helpProvider].example}</Text>
+              </div>
+              <Button onClick={() => setHelpProvider(null)}>Got it</Button>
+            </Stack>
+          </Modal>
+        )}
       </Stack>
     </Container>
   );
