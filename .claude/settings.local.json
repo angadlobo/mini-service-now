@@ -51,7 +51,8 @@
       "Bash(git commit *)",
       "mcp__ide__getDiagnostics",
       "Bash(cat)",
-      "Bash(bash /tmp/cleanup_slas.sh)"
+      "Bash(bash /tmp/cleanup_slas.sh)",
+      "Bash(xargs -I {} sh -c 'echo \"✅ Containers: {} running\"')"
     ]
   }
 }

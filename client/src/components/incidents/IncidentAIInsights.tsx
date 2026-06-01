@@ -4,7 +4,7 @@ import {
   Card, Badge, Stack, Group, Text, Button, Loader, Alert, ThemeIcon, Box, Tabs, Progress,
 } from '@mantine/core';
 import {
-  IconBulb, IconAlertTriangle, IconTarget, IconHistory, IconClock, IconCheckCircle,
+  IconBulb, IconAlertTriangle, IconTarget, IconHistory, IconClock, IconCircleCheck,
 } from '@tabler/icons-react';
 import { api } from '../../api/common.api';
 
@@ -81,7 +81,7 @@ export function IncidentAIInsights({ incidentId }: IncidentAIInsightsProps) {
       <Tabs.List>
         <Tabs.Tab value="overview" leftSection={<IconBulb size={16} />}>AI Overview</Tabs.Tab>
         <Tabs.Tab value="similar" leftSection={<IconTarget size={16} />}>Similar Issues</Tabs.Tab>
-        <Tabs.Tab value="causes" leftSection={<IconCheckCircle size={16} />}>Root Causes</Tabs.Tab>
+        <Tabs.Tab value="causes" leftSection={<IconCircleCheck size={16} />}>Root Causes</Tabs.Tab>
         <Tabs.Tab value="solutions" leftSection={<IconHistory size={16} />}>Past Solutions</Tabs.Tab>
         <Tabs.Tab value="sla" leftSection={<IconClock size={16} />}>SLA Risk</Tabs.Tab>
       </Tabs.List>
@@ -95,7 +95,7 @@ export function IncidentAIInsights({ incidentId }: IncidentAIInsightsProps) {
                 <Group gap="xs">
                   {slaPrediction.risk_level === 'red' && <IconAlertTriangle size={20} color="red" />}
                   {slaPrediction.risk_level === 'yellow' && <IconAlertTriangle size={20} color="orange" />}
-                  {slaPrediction.risk_level === 'green' && <IconCheckCircle size={20} color="green" />}
+                  {slaPrediction.risk_level === 'green' && <IconCircleCheck size={20} color="green" />}
                   <div>
                     <Text fw={600} size="sm">SLA Risk Assessment</Text>
                     <Text size="xs" c="dimmed">{slaPrediction.risk_level.toUpperCase()}</Text>
@@ -239,7 +239,7 @@ export function IncidentAIInsights({ incidentId }: IncidentAIInsightsProps) {
         {slaPrediction && (
           <Stack gap="md">
             <Alert
-              icon={slaPrediction.risk_level === 'red' ? <IconAlertTriangle size={16} /> : <IconCheckCircle size={16} />}
+              icon={slaPrediction.risk_level === 'red' ? <IconAlertTriangle size={16} /> : <IconCircleCheck size={16} />}
               color={slaPrediction.risk_level === 'red' ? 'red' : slaPrediction.risk_level === 'yellow' ? 'yellow' : 'green'}
             >
               <Stack gap="xs">
