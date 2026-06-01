@@ -13,6 +13,7 @@ import { AttachmentPanel } from '../../components/common/AttachmentPanel';
 import { WorkflowActivity } from '../../components/common/WorkflowActivity';
 import { IntegrationLinksPanel } from '../../components/integrations/IntegrationLinksPanel';
 import { IncidentTaskPanel } from '../../components/IncidentTaskPanel';
+import { IncidentAIInsights } from '../../components/incidents/IncidentAIInsights';
 import { useAuthStore } from '../../store/auth';
 import dayjs from 'dayjs';
 
@@ -199,6 +200,7 @@ export function IncidentForm() {
                   {incident.resolved_at && <Text size="sm"><Text span fw={600}>Resolved:</Text> {dayjs(incident.resolved_at).format('MMM D, YYYY HH:mm')}</Text>}
                 </Stack>
               </Paper>
+              <IncidentAIInsights incidentId={incident.id} />
               <IncidentTaskPanel incidentId={incident.id} />
               <AttachmentPanel tableName="incidents" recordId={incident.id} />
               <WorkflowActivity tableName="incidents" recordId={incident.id} />

@@ -14,6 +14,12 @@ router.get('/:id', (req, res, next) => incidentController.getById(req as any, re
 router.post('/', validate(createIncidentSchema), (req, res, next) => incidentController.create(req as any, res, next));
 router.put('/:id', validate(updateIncidentSchema), (req, res, next) => incidentController.update(req as any, res, next));
 
+// AI Intelligence endpoints
+router.get('/:id/ai/similar', (req, res, next) => incidentController.getSimilarIncidents(req as any, res, next));
+router.get('/:id/ai/root-cause', (req, res, next) => incidentController.getRootCauseSuggestions(req as any, res, next));
+router.get('/:id/ai/solutions', (req, res, next) => incidentController.getResolutionSuggestions(req as any, res, next));
+router.get('/:id/ai/sla-prediction', (req, res, next) => incidentController.getSLAPrediction(req as any, res, next));
+
 // Incident Tasks routes (params named consistently with controller)
 router.get('/:incidentId/tasks', (req, res, next) => incidentTaskController.listIncidentTasks(req as any, res, next));
 router.post('/:incidentId/tasks', validate(createIncidentTaskSchema), (req, res, next) => incidentTaskController.createIncidentTask(req as any, res, next));
