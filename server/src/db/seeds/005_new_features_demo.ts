@@ -164,11 +164,9 @@ export async function seed(knex: Knex): Promise<void> {
       host: 'imap.gmail.com',
       port: 993,
       username: 'support@mycompany.com',
-      password: 'encrypted_password_here',
+      encrypted_password: 'encrypted_password_here',
       protocol: 'imap',
       active: true,
-      created_by: admin.id,
-      created_at: new Date(),
     },
     {
       id: emailAccountIds.ops,
@@ -176,25 +174,21 @@ export async function seed(knex: Knex): Promise<void> {
       host: 'imap.outlook.office365.com',
       port: 993,
       username: 'ops-alerts@mycompany.com',
-      password: 'encrypted_password_here',
+      encrypted_password: 'encrypted_password_here',
       protocol: 'imap',
       active: true,
-      created_by: admin.id,
-      created_at: new Date(),
     },
   ]);
 
   // Email routing rules
   const ruleIds = { urgent: uuid(), vendor: uuid(), updates: uuid() };
-  await knex('email_rules').insert([
+  await knex('email_processing_rules').insert([
     {
       id: ruleIds.urgent,
       email_account_id: emailAccountIds.support,
       priority: 100,
       conditions: JSON.stringify({ subject_contains: 'URGENT' }),
       action: 'create_incident',
-      created_by: admin.id,
-      created_at: new Date(),
     },
     {
       id: ruleIds.vendor,
@@ -202,8 +196,6 @@ export async function seed(knex: Knex): Promise<void> {
       priority: 50,
       conditions: JSON.stringify({ from_domain: '@vendor.com' }),
       action: 'create_incident',
-      created_by: admin.id,
-      created_at: new Date(),
     },
     {
       id: ruleIds.updates,
@@ -211,14 +203,12 @@ export async function seed(knex: Knex): Promise<void> {
       priority: 10,
       conditions: JSON.stringify({ subject_contains: 'status update' }),
       action: 'add_comment',
-      created_by: admin.id,
-      created_at: new Date(),
     },
   ]);
 
   // Processed email log
   const procIds = { p1: uuid(), p2: uuid(), p3: uuid() };
-  await knex('email_processed').insert([
+  await knex('processed_emails').insert([
     {
       id: procIds.p1,
       from_address: 'client.urgent@example.com',
@@ -226,7 +216,6 @@ export async function seed(knex: Knex): Promise<void> {
       incident_id: inc1001?.id,
       action_taken: 'create_incident',
       message_id: '<123@example.com>',
-      created_at: new Date(Date.now() - 7200000),
     },
     {
       id: procIds.p2,

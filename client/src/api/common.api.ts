@@ -7,6 +7,9 @@ import type {
   Report, FormTemplate, FormSubmission, AiProvider, AiPrompt, SystemSetting,
 } from '@shared/interfaces';
 
+// Export api for use in components
+export { api };
+
 export const journalApi = {
   list: (tableName: string, recordId: string) =>
     api.get<JournalEntry[]>(`/journal/${tableName}/${recordId}`).then(r => r.data),
