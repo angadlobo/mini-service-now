@@ -51,13 +51,14 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('root_cause_patterns', (t) => {
     t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
     t.string('pattern_name', 255).notNullable();
-    t.text('keywords').notNullable(); // JSON array of keywords that trigger this pattern
+    t.jsonb('keywords').notNullable().defaultTo('[]'); // JSON array of keywords that trigger this pattern
     t.text('root_cause').notNullable();
     t.text('suggested_resolution').nullable();
     t.integer('occurrence_count').defaultTo(0);
     t.decimal('confidence', 5, 3).defaultTo(0); // 0.0-1.0
     t.timestamps(true, true);
     t.unique('pattern_name');
+    t.index('keywords', 'gin');
   });
 
   // Add AI intelligence columns to incidents table
