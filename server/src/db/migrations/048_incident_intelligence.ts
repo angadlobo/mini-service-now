@@ -58,7 +58,6 @@ export async function up(knex: Knex): Promise<void> {
     t.decimal('confidence', 5, 3).defaultTo(0); // 0.0-1.0
     t.timestamps(true, true);
     t.unique('pattern_name');
-    t.index('keywords', 'gin');
   });
 
   // Add AI intelligence columns to incidents table

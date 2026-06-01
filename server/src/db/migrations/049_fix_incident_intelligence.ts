@@ -2,6 +2,9 @@ import { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
   // Drop and recreate root_cause_patterns with correct schema
+  // First drop the old index if it exists
+  await knex.raw('DROP INDEX IF EXISTS "gin"');
+
   await knex.schema.dropTableIfExists('root_cause_patterns');
 
   await knex.schema.createTable('root_cause_patterns', (t) => {
