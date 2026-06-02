@@ -1,6 +1,6 @@
 import { Spotlight, SpotlightActionData } from '@mantine/spotlight';
 import { useNavigate } from 'react-router-dom';
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import {
   IconDashboard, IconAlertTriangle, IconExchange, IconBug, IconServer,
   IconShoppingCart, IconBook, IconChartBar, IconForms, IconChecklist,
@@ -10,7 +10,7 @@ import {
 function SpotlightContent() {
   const navigate = useNavigate();
 
-  const actions: SpotlightActionData[] = [
+  const actions: SpotlightActionData[] = useMemo(() => [
     { id: 'dashboard', label: 'Dashboard', description: 'Go to dashboard', leftSection: <IconDashboard size={18} />, onClick: () => navigate('/') },
     { id: 'incidents', label: 'Incidents', description: 'View all incidents', leftSection: <IconAlertTriangle size={18} />, onClick: () => navigate('/incidents') },
     { id: 'changes', label: 'Changes', description: 'View all changes', leftSection: <IconExchange size={18} />, onClick: () => navigate('/changes') },
@@ -26,8 +26,8 @@ function SpotlightContent() {
     { id: 'new-incident', label: 'New Incident', description: 'Create a new incident', leftSection: <IconPlus size={18} />, onClick: () => navigate('/incidents/new') },
     { id: 'new-change', label: 'New Change', description: 'Create a new change', leftSection: <IconPlus size={18} />, onClick: () => navigate('/changes/new') },
     { id: 'new-problem', label: 'New Problem', description: 'Create a new problem', leftSection: <IconPlus size={18} />, onClick: () => navigate('/problems/new') },
-    { id: 'new-release', label: 'New Release', description: 'Create a new release', leftSection: <IconPlus size={18} />, onClick: () => navigate('/releases/new') },
-  ];
+    { id: 'new-release', label: 'New Release', description: 'Create a new release', leftSection: <IconRocket size={18} />, onClick: () => navigate('/releases/new') },
+  ], [navigate]);
 
   return (
     <Spotlight
